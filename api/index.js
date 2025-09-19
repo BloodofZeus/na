@@ -1,5 +1,5 @@
 // Vercel Serverless API for Shawarma Boss POS
-require('dotenv').config();
+require('dotenv').config({ path: '../.env' });
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
@@ -301,6 +301,15 @@ app.post('/api/orders', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+// Start server for local development
+if (require.main === module) {
+  const PORT = 3001; // Use port 3001 for backend to avoid conflict with frontend
+  app.listen(PORT, () => {
+    console.log(`🚀 Shawarma Boss API running on http://localhost:${PORT}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+  });
+}
 
 // Export for Vercel serverless
 module.exports = app;
