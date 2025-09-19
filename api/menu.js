@@ -32,6 +32,33 @@ module.exports = async (req, res) => {
       await queryDBOnce('INSERT INTO menu (id, name, price, stock) VALUES ($1, $2, $3, $4)', 
                        [id, name, parseFloat(price), parseInt(stock)]);
       res.json({ ok: true, id, name, price, stock });
+    } else if (req.method === 'PUT') {
+      // Update menu item stock - handle both /menu/:id/stock and /menu with id in body
+      const url = req.url || '';
+      const pathParts = url.split('/');
+      
+      let itemId, stock;
+      
+      if (pathParts.length >= 4 && pathParts[2] === 'menu' && pathParts[4] === 'stock') {
+        // Handle /api/menu/:id/stock
+        itemId = pathParts[3];
+        stock = req.body.stock;
+      } else {
+        // Handle /api/menu with id in body
+        itemId = req.body.id;
+        stock = req.body.stock;
+      }
+      
+      if (!itemId) {
+        return res.status(400).json({ error: 'Menu item ID required' });
+      }
+      
+      if (stock === undefined || stock === null) {
+        return res.status(400).json({ error: 'Stock value required' });
+      }
+      
+      await queryDBOnce('UPDATE menu SET stock = $1, updated_at = NOW() WHERE id = $2', [parseInt(stock), itemId]);
+      res.json({ ok: true, id: itemId, stock: parseInt(stock) });
     } else {
       res.status(405).json({ error: 'Method not allowed' });
     }

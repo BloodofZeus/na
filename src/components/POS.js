@@ -114,14 +114,27 @@ const POS = () => {
       
       // Try to extract a meaningful error message
       let errorMessage = 'Unknown error';
-      if (error.message) {
-        errorMessage = error.message;
-      } else if (error.response?.data?.error) {
+      if (error.response?.data?.error) {
         errorMessage = error.response.data.error;
       } else if (error.data?.error) {
         errorMessage = error.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
       } else if (error.status) {
         errorMessage = `HTTP ${error.status}: ${error.statusText || 'Request failed'}`;
+      }
+      
+      // Add specific error message mapping for common issues
+      if (errorMessage.includes('User not found')) {
+        errorMessage = 'User not found. Please log in again.';
+      } else if (errorMessage.includes('Database not initialized')) {
+        errorMessage = 'Database not initialized. Please contact administrator.';
+      } else if (errorMessage.includes('Database connection failed')) {
+        errorMessage = 'Database connection failed. Please try again.';
+      } else if (errorMessage.includes('foreign key constraint')) {
+        errorMessage = 'User not found. Please log in again.';
+      } else if (errorMessage.includes('relation "orders" does not exist')) {
+        errorMessage = 'Database not initialized. Please contact administrator.';
       }
       
       alert(`Failed to create order: ${errorMessage}. Please try again.`);

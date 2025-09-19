@@ -58,24 +58,22 @@ module.exports = async (req, res) => {
     await queryDB(pool, `CREATE INDEX IF NOT EXISTS idx_orders_timestamp ON orders(timestamp)`);
     await queryDB(pool, `CREATE INDEX IF NOT EXISTS idx_menu_stock ON menu(stock)`);
 
-    // Insert default data only in development mode
-    if (process.env.NODE_ENV !== 'production') {
-      const userCount = await queryDB(pool, 'SELECT COUNT(*) as count FROM users');
-      if (parseInt(userCount[0].count) === 0) {
-        const saltRounds = 10;
-        const defaultUsers = [
-          { username: 'admin', password: await bcrypt.hash('admin123', saltRounds), role: 'admin' },
-          { username: 'staff1', password: await bcrypt.hash('staff123', saltRounds), role: 'staff' }
-        ];
-        
-        for (const user of defaultUsers) {
-          await queryDB(pool,
-            'INSERT INTO users (username, password, role) VALUES ($1, $2, $3)',
-            [user.username, user.password, user.role]
-          );
-        }
-        console.log('✅ Default users created (development only)');
+    // Insert default data - always create users if none exist
+    const userCount = await queryDB(pool, 'SELECT COUNT(*) as count FROM users');
+    if (parseInt(userCount[0].count) === 0) {
+      const saltRounds = 10;
+      const defaultUsers = [
+        { username: 'admin', password: await bcrypt.hash('admin123', saltRounds), role: 'admin' },
+        { username: 'staff1', password: await bcrypt.hash('staff123', saltRounds), role: 'staff' }
+      ];
+      
+      for (const user of defaultUsers) {
+        await queryDB(pool,
+          'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) ON CONFLICT (username) DO NOTHING',
+          [user.username, user.password, user.role]
+        );
       }
+      console.log('✅ Default users created');
     }
 
     const menuCount = await queryDB(pool, 'SELECT COUNT(*) as count FROM menu');
