@@ -15,6 +15,7 @@ if (fs.existsSync(parentEnvPath)) {
   // Fallback to default dotenv behavior
   require('dotenv').config();
 }
+
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
@@ -187,51 +188,6 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/test', (req, res) => {
-  res.json({ 
-    ok: true, 
-    message: 'API is working', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    hasDatabaseUrl: !!process.env.DATABASE_URL,
-    databaseUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 20) + '...' : 'not set'
-  });
-});
-
-app.get('/debug', async (req, res) => {
-  try {
-    // Test database connection
-    const dbTest = await pool.query('SELECT NOW() as current_time');
-    
-    // Check if users table exists and has data
-    const userCount = await pool.query('SELECT COUNT(*) as count FROM users');
-    
-    res.json({
-      ok: true,
-      database: {
-        connected: true,
-        currentTime: dbTest.rows[0].current_time,
-        userCount: parseInt(userCount.rows[0].count)
-      },
-      environment: {
-        nodeEnv: process.env.NODE_ENV,
-        hasDatabaseUrl: !!process.env.DATABASE_URL,
-        databaseUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 20) + '...' : 'not set'
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      ok: false,
-      error: error.message,
-      details: error.toString(),
-      environment: {
-        nodeEnv: process.env.NODE_ENV,
-        hasDatabaseUrl: !!process.env.DATABASE_URL
-      }
-    });
-  }
-});
-
 app.get('/health', async (req, res) => {
   try {
     // Test database connection
@@ -288,40 +244,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Get staff/users
-app.get('/staff', async (req, res) => {
-  try {
-    const users = await queryDB('SELECT username, role, meta FROM users ORDER BY created_at');
-    const mapped = users.map(u => ({
-      username: u.username,
-      role: u.role,
-      meta: u.meta || null
-    }));
-    res.json(mapped);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Add staff user with password hashing
-app.post('/staff', async (req, res) => {
-  try {
-    const { username, password, role = 'staff' } = req.body;
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password required' });
-    }
-    
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    
-    await queryDB('INSERT INTO users (username, password, role) VALUES ($1, $2, $3)', 
-                   [username, hashedPassword, role]);
-    res.json({ ok: true, username });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
 // Get menu
 app.get('/menu', async (req, res) => {
   try {
@@ -332,54 +254,6 @@ app.get('/menu', async (req, res) => {
       price: item.price,
       stock: item.stock,
       meta: item.meta || null
-    }));
-    res.json(mapped);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Add menu item
-app.post('/menu', async (req, res) => {
-  try {
-    const { name, price, stock } = req.body;
-    if (!name || price === undefined || stock === undefined) {
-      return res.status(400).json({ error: 'Name, price, and stock required' });
-    }
-    
-    const id = 'm-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-    await queryDB('INSERT INTO menu (id, name, price, stock) VALUES ($1, $2, $3, $4)', 
-                   [id, name, parseFloat(price), parseInt(stock)]);
-    res.json({ ok: true, id, name, price, stock });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Update menu item stock
-app.put('/menu/:id/stock', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { stock } = req.body;
-    
-    await queryDB('UPDATE menu SET stock = $1, updated_at = NOW() WHERE id = $2', [parseInt(stock), id]);
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// Get orders/sales
-app.get('/orders', async (req, res) => {
-  try {
-    const orders = await queryDB('SELECT id, staff, timestamp, total, payload, server_received_at FROM orders ORDER BY server_received_at DESC LIMIT 500');
-    const mapped = orders.map(o => ({
-      id: o.id,
-      staff: o.staff,
-      timestamp: o.timestamp,
-      total: o.total,
-      payload: o.payload || null,
-      serverReceivedAt: o.server_received_at
     }));
     res.json(mapped);
   } catch (e) {
@@ -417,13 +291,4 @@ if (require.main === module) {
 }
 
 // Export for Vercel serverless
-module.exports = (req, res) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-  
-  // Use Express app to handle the request
-  app(req, res);
-};
+module.exports = app;
