@@ -1,0 +1,38 @@
+{
+  "name": "shawarma-boss-frontend",
+  "version": "1.0.0",
+  "description": "Shawarma Boss POS - React Frontend for Vercel",
+  "main": "src/index.js",
+  "homepage": ".",
+  "scripts": {
+    "start": "webpack-dev-server --mode=development",
+    "build": "webpack --mode=production",
+    "dev": "webpack-dev-server --mode=development",
+    "preview": "serve -s dist -l 5000",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["pos", "restaurant", "react", "shawarma"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.1",
+    "axios": "^1.12.2",
+    "bootstrap": "^5.3.8",
+    "@fortawesome/fontawesome-free": "^7.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/preset-env": "^7.28.3",
+    "@babel/preset-react": "^7.27.1",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.4",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^4.15.1",
+    "serve": "^14.2.1"
+  }
+}
