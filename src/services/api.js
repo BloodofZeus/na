@@ -77,10 +77,23 @@ export const getOrders = async () => {
 
 export const createOrder = async (orderData) => {
   try {
+    console.log('API: Sending order data:', orderData);
     const response = await api.post('/orders', orderData);
+    console.log('API: Order creation response:', response.data);
     return response.data;
   } catch (error) {
-    throw error.response?.data || { error: 'Failed to create order' };
+    console.error('API: Order creation error:', error);
+    console.error('API: Error response:', error.response);
+    console.error('API: Error data:', error.response?.data);
+    
+    // Preserve the original error structure
+    if (error.response?.data) {
+      throw error.response.data;
+    } else if (error.message) {
+      throw { error: error.message };
+    } else {
+      throw { error: 'Failed to create order' };
+    }
   }
 };
 

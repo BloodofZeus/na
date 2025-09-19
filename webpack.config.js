@@ -65,7 +65,13 @@ module.exports = (env, argv) => {
           test: /\.(png|jpg|jpeg|gif|svg|ico)$/,
           type: 'asset/resource',
           generator: {
-            filename: 'images/[name].[contenthash][ext]'
+            filename: (pathData) => {
+              // Keep original filenames for icons and logos in public directory
+              if (pathData.filename.includes('public/')) {
+                return '[name][ext]';
+              }
+              return 'images/[name].[contenthash][ext]';
+            }
           }
         },
         {
@@ -93,7 +99,21 @@ module.exports = (env, argv) => {
           minifyCSS: true,
           minifyURLs: true
         } : false
-      })
+      }),
+      // Copy static assets from public directory
+      ...(isProduction ? [
+        new (require('copy-webpack-plugin'))({
+          patterns: [
+            {
+              from: 'public',
+              to: '.',
+              globOptions: {
+                ignore: ['**/index.html']
+              }
+            }
+          ]
+        })
+      ] : [])
     ],
     resolve: {
       extensions: ['.js', '.jsx'],

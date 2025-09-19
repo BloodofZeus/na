@@ -93,7 +93,7 @@ const Header = () => {
         >
           <div className="brand-icon">
             <img 
-              src="/icons/logo.png" 
+              src="/logo.png" 
               alt="Shawarma Boss Logo" 
               className="brand-logo"
             />

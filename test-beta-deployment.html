@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Beta Deployment - Shawarma Boss POS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #e60000;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Beta Deployment</h1>
+        <p>Testing the beta deployment at <strong>https://na-beta.vercel.app</strong></p>
+        
+        <div class="test-section">
+            <h3>🔍 Basic API Tests</h3>
+            <button onclick="testHealth()">Test Health</button>
+            <button onclick="testMenu()">Test Menu</button>
+            <button onclick="testOrders()">Test Orders</button>
+            <button onclick="testStaff()">Test Staff</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔐 Authentication Test</h3>
+            <button onclick="testLogin()">Test Login (admin:admin123)</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>📝 Order Creation Test</h3>
+            <div class="form-group">
+                <label for="orderId">Order ID:</label>
+                <input type="text" id="orderId" value="test-order-123" />
+            </div>
+            <div class="form-group">
+                <label for="total">Total Amount:</label>
+                <input type="number" id="total" value="25.50" step="0.01" />
+            </div>
+            <button onclick="testOrderCreation()">Test Order Creation</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>📦 Menu Stock Update Test</h3>
+            <div class="form-group">
+                <label for="menuItemId">Menu Item ID:</label>
+                <input type="text" id="menuItemId" value="m-1" />
+            </div>
+            <div class="form-group">
+                <label for="newStock">New Stock:</label>
+                <input type="number" id="newStock" value="20" />
+            </div>
+            <button onclick="testStockUpdate()">Test Stock Update</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://na-beta.vercel.app/api';
+        
+        function showResult(message, type = 'info') {
+            const result = document.getElementById('result');
+            result.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        async function testHealth() {
+            showResult('🔄 Testing health endpoint...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                showResult(`✅ Health Check:\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                showResult(`❌ Health Check Failed:\n${error.message}`, 'error');
+            }
+        }
+        
+        async function testMenu() {
+            showResult('🔄 Testing menu endpoint...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/menu`);
+                const data = await response.json();
+                showResult(`✅ Menu Data:\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                showResult(`❌ Menu Test Failed:\n${error.message}`, 'error');
+            }
+        }
+        
+        async function testOrders() {
+            showResult('🔄 Testing orders endpoint...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/orders`);
+                const data = await response.json();
+                showResult(`✅ Orders Data:\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                showResult(`❌ Orders Test Failed:\n${error.message}`, 'error');
+            }
+        }
+        
+        async function testStaff() {
+            showResult('🔄 Testing staff endpoint...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/staff`);
+                const data = await response.json();
+                showResult(`✅ Staff Data:\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                showResult(`❌ Staff Test Failed:\n${error.message}`, 'error');
+            }
+        }
+        
+        async function testLogin() {
+            showResult('🔄 Testing login endpoint...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                const data = await response.json();
+                showResult(`✅ Login Test:\n${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                showResult(`❌ Login Test Failed:\n${error.message}`, 'error');
+            }
+        }
+        
+        async function testOrderCreation() {
+            showResult('🔄 Testing order creation...', 'info');
+            
+            const orderData = {
+                id: document.getElementById('orderId').value,
+                user: 'admin',
+                staff: 'admin',
+                timestamp: new Date().toISOString(),
+                total: parseFloat(document.getElementById('total').value),
+                items: [{
+                    id: 'm-1',
+                    name: 'Shawarma Wrap',
+                    price: 20,
+                    quantity: 1
+                }],
+                status: 'completed'
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ Order Created Successfully!\n\nOrder ID: ${data.id}\nResponse: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult(`❌ Order Creation Failed!\n\nStatus: ${response.status}\nError: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testStockUpdate() {
+            showResult('🔄 Testing stock update...', 'info');
+            
+            const menuItemId = document.getElementById('menuItemId').value;
+            const newStock = parseInt(document.getElementById('newStock').value);
+            
+            try {
+                const response = await fetch(`${API_BASE}/menu/${menuItemId}/stock`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        stock: newStock
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ Stock Updated Successfully!\n\nItem ID: ${menuItemId}\nNew Stock: ${newStock}\nResponse: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult(`❌ Stock Update Failed!\n\nStatus: ${response.status}\nError: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

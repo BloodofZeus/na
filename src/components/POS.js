@@ -63,8 +63,11 @@ const POS = () => {
     };
 
     try {
+      console.log('Creating order with data:', order);
+      
       // Save order to backend
-      await createOrder(order);
+      const result = await createOrder(order);
+      console.log('Order creation result:', result);
 
       // Update stock for each item
       for (const item of cartItems) {
@@ -100,7 +103,28 @@ const POS = () => {
       clearCart();
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Failed to create order. Please try again.');
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response,
+        data: error.data,
+        status: error.status,
+        statusText: error.statusText,
+        fullError: error
+      });
+      
+      // Try to extract a meaningful error message
+      let errorMessage = 'Unknown error';
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.data?.error) {
+        errorMessage = error.data.error;
+      } else if (error.status) {
+        errorMessage = `HTTP ${error.status}: ${error.statusText || 'Request failed'}`;
+      }
+      
+      alert(`Failed to create order: ${errorMessage}. Please try again.`);
     }
   };
 
