@@ -27,10 +27,16 @@ const DATABASE_URL = process.env.DATABASE_URL ||
   process.env.PGURL || 
   `postgresql://${process.env.PGUSER || 'postgres'}:${process.env.PGPASSWORD || 'postgres'}@${process.env.PGHOST || 'localhost'}:${process.env.PGPORT || 5432}/${process.env.PGDATABASE || 'shawarma_boss'}`;
 
-// PostgreSQL Database setup
+// PostgreSQL Database setup with connection pooling for Vercel
 const pool = new Pool({
   connectionString: DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  // Connection pooling settings for serverless
+  max: 1, // Maximum number of connections in the pool
+  idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
+  // For Neon.tech specifically
+  allowExitOnIdle: true, // Allow the process to exit when all connections are idle
 });
 
 // Enable CORS for all environments
@@ -139,10 +145,31 @@ async function initializeDatabase() {
 // Initialize database on startup
 initializeDatabase();
 
-// Helper function for database queries
+// Cleanup function for serverless environment
+const cleanup = async () => {
+  try {
+    await pool.end();
+    console.log('Database pool closed');
+  } catch (error) {
+    console.error('Error closing database pool:', error);
+  }
+};
+
+// Handle process termination
+process.on('SIGINT', cleanup);
+process.on('SIGTERM', cleanup);
+process.on('exit', cleanup);
+
+// Helper function for database queries with timeout
 async function queryDB(sql, params = []) {
   try {
-    const result = await pool.query(sql, params);
+    // Add timeout to prevent hanging requests
+    const queryPromise = pool.query(sql, params);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Query timeout')), 5000)
+    );
+    
+    const result = await Promise.race([queryPromise, timeoutPromise]);
     return result.rows;
   } catch (error) {
     console.error('Database query error:', error);
@@ -151,13 +178,58 @@ async function queryDB(sql, params = []) {
 }
 
 // API Routes (all prefixed with /api)
+app.get('/', (req, res) => {
+  res.json({ 
+    ok: true, 
+    message: 'Shawarma Boss API is running!', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 app.get('/api/test', (req, res) => {
   res.json({ 
     ok: true, 
     message: 'API is working', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    hasDatabaseUrl: !!process.env.DATABASE_URL,
+    databaseUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 20) + '...' : 'not set'
   });
+});
+
+app.get('/api/debug', async (req, res) => {
+  try {
+    // Test database connection
+    const dbTest = await pool.query('SELECT NOW() as current_time');
+    
+    // Check if users table exists and has data
+    const userCount = await pool.query('SELECT COUNT(*) as count FROM users');
+    
+    res.json({
+      ok: true,
+      database: {
+        connected: true,
+        currentTime: dbTest.rows[0].current_time,
+        userCount: parseInt(userCount.rows[0].count)
+      },
+      environment: {
+        nodeEnv: process.env.NODE_ENV,
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        databaseUrlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 20) + '...' : 'not set'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      error: error.message,
+      details: error.toString(),
+      environment: {
+        nodeEnv: process.env.NODE_ENV,
+        hasDatabaseUrl: !!process.env.DATABASE_URL
+      }
+    });
+  }
 });
 
 app.get('/api/health', async (req, res) => {
@@ -182,28 +254,37 @@ app.get('/api/health', async (req, res) => {
 // Login endpoint with secure password verification
 app.post('/api/login', async (req, res) => {
   try {
+    console.log('Login attempt:', { username: req.body?.username, hasPassword: !!req.body?.password });
+    
     const { username, password } = req.body || {};
     if (!username || !password) {
       return res.status(400).json({ ok: false, error: 'Username and password required' });
     }
     
+    // Test database connection first
+    await pool.query('SELECT NOW()');
+    console.log('Database connection successful');
+    
     const users = await queryDB('SELECT username, password, role FROM users WHERE username = $1', [username]);
     const user = users[0];
     
     if (!user) {
+      console.log('User not found:', username);
       return res.status(401).json({ ok: false, error: 'Invalid credentials' });
     }
     
     // Verify password using bcrypt
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
+      console.log('Invalid password for user:', username);
       return res.status(401).json({ ok: false, error: 'Invalid credentials' });
     }
     
+    console.log('Login successful for user:', username);
     res.json({ ok: true, username: user.username, role: user.role });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok: false, error: e.message });
+    console.error('Login error:', e);
+    res.status(500).json({ ok: false, error: e.message, details: e.toString() });
   }
 });
 
