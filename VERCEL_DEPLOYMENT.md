@@ -25,9 +25,14 @@ This project has been restructured for Vercel deployment with the following stru
 
 ### 3. Environment Variables
 Add these environment variables in Vercel project settings:
-- `DATABASE_URL`: Your PostgreSQL connection string
+- `DATABASE_URL`: Your Neon PostgreSQL connection string (postgresql://neondb_owner:...)
 - `NODE_ENV`: `production`
-- Any other required environment variables
+- `PGHOST`: Your Neon database host
+- `PGUSER`: Your Neon database user
+- `PGDATABASE`: Your Neon database name
+- `PGPASSWORD`: Your Neon database password
+
+**Important**: Use the pooled connection URL from Neon for better performance in serverless environments.
 
 ### 4. Database Setup
 - Use a serverless-friendly PostgreSQL provider (Neon, Supabase recommended)
