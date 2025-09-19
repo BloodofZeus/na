@@ -177,7 +177,7 @@ async function queryDB(sql, params = []) {
   }
 }
 
-// API Routes (all prefixed with /api)
+// API Routes (no /api prefix needed - Vercel handles routing)
 app.get('/', (req, res) => {
   res.json({ 
     ok: true, 
@@ -187,7 +187,7 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/api/test', (req, res) => {
+app.get('/test', (req, res) => {
   res.json({ 
     ok: true, 
     message: 'API is working', 
@@ -198,7 +198,7 @@ app.get('/api/test', (req, res) => {
   });
 });
 
-app.get('/api/debug', async (req, res) => {
+app.get('/debug', async (req, res) => {
   try {
     // Test database connection
     const dbTest = await pool.query('SELECT NOW() as current_time');
@@ -232,7 +232,7 @@ app.get('/api/debug', async (req, res) => {
   }
 });
 
-app.get('/api/health', async (req, res) => {
+app.get('/health', async (req, res) => {
   try {
     // Test database connection
     await pool.query('SELECT NOW()');
@@ -252,7 +252,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Login endpoint with secure password verification
-app.post('/api/login', async (req, res) => {
+app.post('/login', async (req, res) => {
   try {
     console.log('Login attempt:', { username: req.body?.username, hasPassword: !!req.body?.password });
     
@@ -289,7 +289,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // Get staff/users
-app.get('/api/staff', async (req, res) => {
+app.get('/staff', async (req, res) => {
   try {
     const users = await queryDB('SELECT username, role, meta FROM users ORDER BY created_at');
     const mapped = users.map(u => ({
@@ -304,7 +304,7 @@ app.get('/api/staff', async (req, res) => {
 });
 
 // Add staff user with password hashing
-app.post('/api/staff', async (req, res) => {
+app.post('/staff', async (req, res) => {
   try {
     const { username, password, role = 'staff' } = req.body;
     if (!username || !password) {
@@ -323,7 +323,7 @@ app.post('/api/staff', async (req, res) => {
 });
 
 // Get menu
-app.get('/api/menu', async (req, res) => {
+app.get('/menu', async (req, res) => {
   try {
     const menu = await queryDB('SELECT id, name, price, stock, meta FROM menu ORDER BY created_at');
     const mapped = menu.map(item => ({
@@ -340,7 +340,7 @@ app.get('/api/menu', async (req, res) => {
 });
 
 // Add menu item
-app.post('/api/menu', async (req, res) => {
+app.post('/menu', async (req, res) => {
   try {
     const { name, price, stock } = req.body;
     if (!name || price === undefined || stock === undefined) {
@@ -357,7 +357,7 @@ app.post('/api/menu', async (req, res) => {
 });
 
 // Update menu item stock
-app.put('/api/menu/:id/stock', async (req, res) => {
+app.put('/menu/:id/stock', async (req, res) => {
   try {
     const { id } = req.params;
     const { stock } = req.body;
@@ -370,7 +370,7 @@ app.put('/api/menu/:id/stock', async (req, res) => {
 });
 
 // Get orders/sales
-app.get('/api/orders', async (req, res) => {
+app.get('/orders', async (req, res) => {
   try {
     const orders = await queryDB('SELECT id, staff, timestamp, total, payload, server_received_at FROM orders ORDER BY server_received_at DESC LIMIT 500');
     const mapped = orders.map(o => ({
@@ -388,7 +388,7 @@ app.get('/api/orders', async (req, res) => {
 });
 
 // Add order
-app.post('/api/orders', async (req, res) => {
+app.post('/orders', async (req, res) => {
   try {
     const order = req.body;
     if (!order || !order.id) {
