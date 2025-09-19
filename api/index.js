@@ -417,4 +417,13 @@ if (require.main === module) {
 }
 
 // Export for Vercel serverless
-module.exports = app;
+module.exports = (req, res) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  
+  // Use Express app to handle the request
+  app(req, res);
+};
