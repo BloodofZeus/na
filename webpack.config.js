@@ -1,76 +1,127 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 
-module.exports = {
-  entry: './src/index.js',
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.[contenthash].js',
-    publicPath: '/',
-    clean: true
-  },
-  devServer: {
-    host: '0.0.0.0',
-    port: 5000,
-    allowedHosts: 'all',
-    historyApiFallback: true,
-    static: {
-      directory: path.join(__dirname, 'dist'),
+module.exports = (env, argv) => {
+  const isProduction = argv.mode === 'production';
+  
+  return {
+    entry: './src/index.js',
+    output: {
+      path: path.resolve(__dirname, 'dist'),
+      filename: isProduction ? 'bundle.[contenthash].js' : 'bundle.js',
+      publicPath: '/',
+      clean: true,
+      assetModuleFilename: 'assets/[name].[contenthash][ext]'
     },
-    compress: true,
-    hot: true,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false
-      }
-    }
-  },
-  module: {
-    rules: [
-      {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react']
-          }
-        }
+    devServer: {
+      host: '0.0.0.0',
+      port: 5000,
+      allowedHosts: 'all',
+      historyApiFallback: true,
+      static: {
+        directory: path.join(__dirname, 'dist'),
       },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader']
-      },
-      {
-        test: /\.(png|jpg|jpeg|gif|svg)$/,
-        type: 'asset/resource'
-      }
-    ]
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: './public/index.html',
-      filename: 'index.html'
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
+      compress: true,
+      hot: true,
+      open: false
+    },
+    module: {
+      rules: [
         {
-          from: 'icons',
-          to: 'icons'
+          test: /\.(js|jsx)$/,
+          exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                ['@babel/preset-env', {
+                  targets: {
+                    browsers: ['last 2 versions', 'ie >= 11']
+                  },
+                  modules: false
+                }],
+                ['@babel/preset-react', {
+                  runtime: 'automatic'
+                }]
+              ],
+              plugins: isProduction ? [] : ['react-refresh/babel']
+            }
+          }
         },
         {
-          from: 'public/manifest.json',
-          to: 'manifest.json'
+          test: /\.css$/,
+          use: [
+            'style-loader',
+            {
+              loader: 'css-loader',
+              options: {
+                modules: false,
+                sourceMap: !isProduction
+              }
+            }
+          ]
+        },
+        {
+          test: /\.(png|jpg|jpeg|gif|svg|ico)$/,
+          type: 'asset/resource',
+          generator: {
+            filename: 'images/[name].[contenthash][ext]'
+          }
+        },
+        {
+          test: /\.(woff|woff2|eot|ttf|otf)$/,
+          type: 'asset/resource',
+          generator: {
+            filename: 'fonts/[name].[contenthash][ext]'
+          }
         }
       ]
-    })
-  ],
-  resolve: {
-    extensions: ['.js', '.jsx']
-  },
-  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
-  devtool: process.env.NODE_ENV === 'production' ? 'source-map' : 'eval-source-map'
+    },
+    plugins: [
+      new HtmlWebpackPlugin({
+        template: './public/index.html',
+        filename: 'index.html',
+        minify: isProduction ? {
+          removeComments: true,
+          collapseWhitespace: true,
+          removeRedundantAttributes: true,
+          useShortDoctype: true,
+          removeEmptyAttributes: true,
+          removeStyleLinkTypeAttributes: true,
+          keepClosingSlash: true,
+          minifyJS: true,
+          minifyCSS: true,
+          minifyURLs: true
+        } : false
+      })
+    ],
+    resolve: {
+      extensions: ['.js', '.jsx'],
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
+        '@components': path.resolve(__dirname, 'src/components'),
+        '@services': path.resolve(__dirname, 'src/services')
+      }
+    },
+    optimization: {
+      splitChunks: isProduction ? {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+        },
+      } : false,
+      minimize: isProduction
+    },
+    mode: isProduction ? 'production' : 'development',
+    devtool: isProduction ? 'source-map' : 'eval-source-map',
+    performance: {
+      hints: isProduction ? 'warning' : false,
+      maxEntrypointSize: 512000,
+      maxAssetSize: 512000
+    }
+  };
 };
