@@ -1,5 +1,20 @@
 // Vercel Serverless API for Shawarma Boss POS
-require('dotenv').config({ path: '../.env' });
+// Try to load .env from parent directory (local dev) or current directory (Vercel)
+const path = require('path');
+const fs = require('fs');
+
+// Check if .env exists in parent directory (local development)
+const parentEnvPath = path.join(__dirname, '..', '.env');
+const currentEnvPath = path.join(__dirname, '.env');
+
+if (fs.existsSync(parentEnvPath)) {
+  require('dotenv').config({ path: parentEnvPath });
+} else if (fs.existsSync(currentEnvPath)) {
+  require('dotenv').config({ path: currentEnvPath });
+} else {
+  // Fallback to default dotenv behavior
+  require('dotenv').config();
+}
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
@@ -18,13 +33,13 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
-// Enable CORS for development only (not needed for same-origin on Vercel)
-if (process.env.NODE_ENV !== 'production') {
-  app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:5000'],
-    credentials: true
-  }));
-}
+// Enable CORS for all environments
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? true // Allow all origins in production (Vercel)
+    : ['http://localhost:3000', 'http://localhost:5000'], // Specific origins in development
+  credentials: true
+}));
 
 app.use(express.json({ limit: '10mb' }));
 
@@ -136,6 +151,15 @@ async function queryDB(sql, params = []) {
 }
 
 // API Routes (all prefixed with /api)
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    ok: true, 
+    message: 'API is working', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 app.get('/api/health', async (req, res) => {
   try {
     // Test database connection
