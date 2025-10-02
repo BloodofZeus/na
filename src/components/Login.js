@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../services/AuthContext';
+import { useToast } from './ToastContainer';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -7,6 +8,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const { showSuccess, showError } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,7 +16,9 @@ const Login = () => {
     setIsLoading(true);
 
     if (!username.trim() || !password.trim()) {
-      setError('Please enter both username and password');
+      const errorMsg = 'Please enter both username and password';
+      setError(errorMsg);
+      showError(errorMsg);
       setIsLoading(false);
       return;
     }
@@ -22,10 +26,17 @@ const Login = () => {
     try {
       const result = await login(username.trim(), password);
       if (!result.success) {
-        setError(result.error || 'Login failed');
+        const errorMsg = result.error || 'Invalid username or password';
+        setError(errorMsg);
+        showError(errorMsg);
+      } else {
+        showSuccess(`Welcome back, ${username}!`);
+        setError('');
       }
     } catch (error) {
-      setError('An error occurred. Please try again.');
+      const errorMsg = 'Network error. Please check your connection and try again.';
+      setError(errorMsg);
+      showError(errorMsg);
     } finally {
       setIsLoading(false);
     }

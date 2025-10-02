@@ -98,7 +98,21 @@ Preferred communication style: Simple, everyday language.
 - Run command: `node server.js` (serves static files and API)
 - Deployment target: Autoscale (stateless application)
 
-# Recent Enhancements (October 2025)
+# Recent Changes
+
+## GitHub Import Setup (October 2, 2025)
+- Successfully imported Shawarma Boss POS from GitHub to Replit
+- Created and configured PostgreSQL database with Replit's managed database service
+- Initialized database with default users (admin/admin123, staff1/staff123) and menu items
+- Configured Full Stack Server workflow to run both frontend (port 5000) and backend (port 3001)
+- Set up deployment configuration for production (autoscale with build and run commands)
+- Verified all API endpoints are working correctly
+- Frontend is properly configured with allowedHosts: 'all' for Replit's proxy environment
+
+## Bug Fixes (October 2, 2025)
+- **Staff Deletion Foreign Key Fix**: Fixed staff deletion error by nullifying orders.staff field before deleting users. This prevents foreign key constraint violations when deleting staff members who have associated orders.
+- **Login Error Messages**: Improved login error handling with user-friendly messages ("Invalid username or password" instead of generic errors). Added toast notifications for login success and failure with clear feedback.
+- **Login Success Notification**: Added welcome toast notification when users successfully log in, showing "Welcome back, [username]!"
 
 ## Enhanced Admin Panel Features
 

@@ -72,6 +72,11 @@ module.exports = async (req, res) => {
         return res.status(404).json({ error: 'User not found' });
       }
       
+      // First, nullify the staff field in any orders associated with this user
+      // This prevents the foreign key constraint violation
+      await queryDBOnce('UPDATE orders SET staff = NULL WHERE staff = $1', [username]);
+      
+      // Now we can safely delete the user
       await queryDBOnce('DELETE FROM users WHERE username = $1', [username]);
       res.json({ ok: true, username });
     } else {
