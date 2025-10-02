@@ -103,7 +103,7 @@ const Header = () => {
               Shawarma Boss
               <span className="brand-badge">POS</span>
             </h1>
-            <p className="brand-subtitle d-none d-lg-block">Where Flavor Meets Technology</p>
+            <p className="brand-subtitle d-none d-lg-block">Taste The Boss Life</p>
           </div>
         </button>
 
