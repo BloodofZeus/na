@@ -57,6 +57,23 @@ const POS = () => {
     };
   }, []);
 
+  // Listen for POS data reset events from admin
+  useEffect(() => {
+    const handlePosDataReset = (event) => {
+      if (event.detail?.type === 'orders_cleared') {
+        // Clear recent orders and reload from API
+        setRecentOrders([]);
+        loadRecentOrders();
+      }
+    };
+
+    window.addEventListener('posDataReset', handlePosDataReset);
+    
+    return () => {
+      window.removeEventListener('posDataReset', handlePosDataReset);
+    };
+  }, []);
+
   // Also refresh menu and recent orders when window gains focus (e.g., different browser tabs)
   useEffect(() => {
     const handleFocus = () => {
@@ -123,7 +140,7 @@ const POS = () => {
         // Fetch real orders from API
         const ordersData = await getOrders();
         // Get the 5 most recent orders
-        const recentOrdersData = ordersData.slice(0, 5);
+        const recentOrdersData = ordersData ? ordersData.slice(0, 5) : [];
         setRecentOrders(recentOrdersData);
         
         // Also save to localStorage for offline access
@@ -133,10 +150,14 @@ const POS = () => {
         const stored = localStorage.getItem('shawarma_boss_recent_orders');
         if (stored) {
           try {
-            setRecentOrders(JSON.parse(stored));
+            const storedOrders = JSON.parse(stored);
+            setRecentOrders(storedOrders || []);
           } catch (error) {
             console.error('Error loading recent orders from localStorage:', error);
+            setRecentOrders([]);
           }
+        } else {
+          setRecentOrders([]);
         }
       }
     } catch (error) {
@@ -145,10 +166,14 @@ const POS = () => {
       const stored = localStorage.getItem('shawarma_boss_recent_orders');
       if (stored) {
         try {
-          setRecentOrders(JSON.parse(stored));
+          const storedOrders = JSON.parse(stored);
+          setRecentOrders(storedOrders || []);
         } catch (localError) {
           console.error('Error loading recent orders from localStorage:', localError);
+          setRecentOrders([]);
         }
+      } else {
+        setRecentOrders([]);
       }
     }
   };
@@ -395,7 +420,10 @@ const POS = () => {
         </h5>
         <button 
           className="btn btn-sm btn-light text-success"
-          onClick={loadRecentOrders}
+          onClick={() => {
+            setRecentOrders([]);
+            loadRecentOrders();
+          }}
           title="Refresh orders"
         >
           <i className="fas fa-refresh"></i>

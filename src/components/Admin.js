@@ -307,13 +307,25 @@ const Admin = () => {
     try {
       setIsLoading(true);
       const result = await resetPOS(user.username, adminPassword);
+      
+      // Clear all cached data
+      localStorage.removeItem('shawarma_boss_recent_orders');
+      localStorage.removeItem('shawarma_boss_menu');
+      localStorage.removeItem('shawarma_boss_user');
+      
+      // Reload all data
       await loadAllData();
+      
+      // Notify other components that data has been reset
+      window.dispatchEvent(new CustomEvent('posDataReset', { 
+        detail: { type: 'orders_cleared' } 
+      }));
       
       showSuccess(
         `POS system reset successfully! ` +
         `Deleted ${result.details.ordersDeleted} orders, ` +
-        `${result.details.staffDeleted} staff members. ` +
-        `Menu reset to ${result.details.menuItemsCreated} default items.`
+        `${result.details.staffDeleted} staff members, ` +
+        `${result.details.menuItemsDeleted} menu items.`
       );
       
       notifySystem('POS system has been reset to factory settings', 'high');
