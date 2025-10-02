@@ -24,13 +24,13 @@ module.exports = async (req, res) => {
     const user = users[0];
     
     if (!user) {
-      return res.status(401).json({ ok: false, error: 'Invalid email or password. Please try again.' });
+      return res.status(401).json({ ok: false, error: 'Invalid username or password' });
     }
     
     // Verify password using bcrypt
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      return res.status(401).json({ ok: false, error: 'Invalid email or password. Please try again.' });
+      return res.status(401).json({ ok: false, error: 'Invalid username or password' });
     }
     
     res.json({ ok: true, username: user.username, role: user.role });

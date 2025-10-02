@@ -160,6 +160,24 @@ export const createOrder = async (orderData) => {
   }
 };
 
+export const resetStaffOrders = async (username) => {
+  try {
+    const response = await api.delete('/orders', { data: { staff: username } });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to reset staff orders' };
+  }
+};
+
+export const resetAllOrders = async () => {
+  try {
+    const response = await api.delete('/orders', { data: { action: 'reset-all' } });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to reset all orders' };
+  }
+};
+
 // Health check
 export const healthCheck = async () => {
   try {

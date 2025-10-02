@@ -49,6 +49,23 @@ module.exports = async (req, res) => {
       
       console.log('Orders API: Order inserted successfully');
       res.json({ ok: true, id: order.id });
+    } else if (req.method === 'DELETE') {
+      // Delete orders - either for a specific staff member or reset all
+      const { staff, action } = req.body || {};
+      
+      if (action === 'reset-all') {
+        // Reset entire POS - delete all orders
+        const result = await queryDBOnce('DELETE FROM orders');
+        console.log('Orders API: All orders deleted');
+        res.json({ ok: true, message: 'All orders deleted', action: 'reset-all' });
+      } else if (staff) {
+        // Reset specific staff member's orders
+        const result = await queryDBOnce('DELETE FROM orders WHERE staff = $1', [staff]);
+        console.log(`Orders API: Deleted orders for staff: ${staff}`);
+        res.json({ ok: true, message: `Orders deleted for ${staff}`, staff });
+      } else {
+        return res.status(400).json({ error: 'Either staff or action=reset-all required' });
+      }
     } else {
       res.status(405).json({ error: 'Method not allowed' });
     }
