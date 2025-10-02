@@ -1,6 +1,6 @@
 # Overview
 
-Shawarma Boss POS is a modern Point of Sale system built with the MERN stack (MongoDB/PostgreSQL, Express.js, React, Node.js). Originally developed as a vanilla JavaScript PWA stored in localStorage, it has been transformed into a full-stack application with a React frontend, Express.js backend, and PostgreSQL database. The system provides comprehensive POS functionality including user authentication, menu management, order processing, receipt generation, sales tracking, and real-time inventory management with role-based access control for admin and staff users.
+Shawarma Boss POS is a modern Point of Sale system built with the MERN stack (MongoDB/PostgreSQL, Express.js, React, Node.js). It provides comprehensive POS functionality including user authentication, menu management, order processing, receipt generation, sales tracking, and real-time inventory management with role-based access control for admin and staff users. The system also features Progressive Web App (PWA) capabilities for offline functionality and an installable experience.
 
 # User Preferences
 
@@ -9,229 +9,100 @@ Preferred communication style: Simple, everyday language.
 # System Architecture
 
 ## Frontend Architecture
-- **React 18** with functional components and hooks for the user interface
-- **React Router** for client-side navigation between POS and admin views
-- **Context API** for state management (AuthContext for user sessions, CartContext for shopping cart)
-- **Axios** for HTTP client communication with the backend API
-- **Component-based architecture** with reusable components (Header, Login, POS, Admin, Cart, MenuGrid, OrderModal)
-- **Responsive design** using Bootstrap 5 and custom CSS with mobile-first approach
-- **Webpack** for module bundling and build process with hot reloading in development
+- **React 18** with functional components and hooks
+- **React Router** for navigation
+- **Context API** for state management (AuthContext, CartContext)
+- **Axios** for API communication
+- **Component-based architecture**
+- **Responsive design** using Bootstrap 5 and custom CSS
+- **Webpack** for bundling
 
 ## Backend Architecture
-- **Express.js** web server providing RESTful API endpoints
-- **PostgreSQL** as the primary database with ACID compliance
-- **Database initialization** with automatic table creation and default data seeding
-- **Role-based authentication** with admin and staff user roles
-- **CORS enabled** for cross-origin requests (required for Replit proxy)
-- **Environment variable configuration** for database connection and deployment flexibility
-- **Static file serving** for both React build artifacts and legacy PWA assets
+- **Express.js** providing RESTful API endpoints
+- **PostgreSQL** as the primary database
+- **Database initialization** with automatic table creation and data seeding
+- **Role-based authentication** (admin and staff)
+- **CORS enabled**
+- **Environment variable configuration**
+- **Static file serving** for React build and legacy PWA assets
 
 ## Data Storage Architecture
-- **PostgreSQL tables**: users, menu, orders with proper relational structure
-- **Backward compatibility** with localStorage data migration for existing installations
-- **JSON metadata storage** in JSONB fields for flexible data extension
-- **Automatic timestamp tracking** for created_at and updated_at fields
+- **PostgreSQL tables**: users, menu, orders with relational structure
+- **Backward compatibility** with localStorage data migration
+- **JSON metadata storage** in JSONB fields
+- **Automatic timestamp tracking**
 
 ## Authentication & Authorization
 - **Session-based authentication** with localStorage persistence
-- **Role-based access control** (admin can access all features, staff limited to POS functionality)
-- **Token-based API authentication** for external server sync (optional)
-- **Password validation** with secure credential handling
+- **Role-based access control** (admin, staff)
+- **Password validation**
 
 ## Legacy PWA Support
 - **Service worker** for offline functionality and caching
-- **Web app manifest** for PWA installation capabilities
-- **Progressive enhancement** approach maintaining offline-first functionality
+- **Web app manifest** for PWA installation
 - **Dual architecture** supporting both modern React app and legacy vanilla JavaScript
+
+## UI/UX Decisions
+- Modern and clean interface with a focus on usability for POS operations.
+- Admin panel provides detailed management views for staff and menu items.
+- Visual cues like category badges and status indicators.
+
+## Feature Specifications
+- **Staff Management**: View/edit staff details, reset passwords, delete staff, assign roles, activate/deactivate, and POS system reset.
+- **Menu Management**: View/edit item details, update price, change category, toggle availability, duplicate, and delete items.
+- **PWA Features**: Offline functionality, installability, fast loading, reliable sync, real-time status, and native-like experience.
+- **POS System Reset**: Admin-only factory reset to clear all orders, staff, and menu items - leaves system completely empty for admin to rebuild.
+
+## System Design Choices
+- Emphasis on modularity and reusability of components.
+- Clear separation of concerns between frontend and backend.
+- Robust error handling and user feedback mechanisms.
+- Scalability considerations for database and server architecture.
+- Offline-first approach for critical POS operations.
 
 # External Dependencies
 
 ## Frontend Libraries
-- **Bootstrap 5** - CSS framework for responsive UI components
-- **Font Awesome** - Icon library for UI elements
-- **Chart.js** - Data visualization for sales analytics and reporting
-- **jsPDF** - PDF generation for receipts and reports
-- **QRious** - QR code generation for receipts
+- **Bootstrap 5** - CSS framework
+- **Font Awesome** - Icon library
+- **Chart.js** - Data visualization
+- **jsPDF** - PDF generation
+- **QRious** - QR code generation
 
 ## Backend Dependencies
-- **PostgreSQL (pg)** - Primary database driver and connection pooling
+- **PostgreSQL (pg)** - Database driver
 - **CORS** - Cross-origin resource sharing middleware
 - **body-parser** - HTTP request body parsing middleware
-- **dotenv** - Environment variable configuration management
+- **dotenv** - Environment variable management
 
 ## Build Tools & Development
-- **Webpack** - Module bundler with Babel transpilation
-- **Babel** - JavaScript transpiler for React JSX and modern JavaScript features
-- **React Scripts** - Create React App tooling for development workflow
-
-## Database Configuration
-- **PostgreSQL connection** with environment variable configuration
-- **SSL support** for production deployments
-- **Connection pooling** for efficient database resource management
-- **Automatic failover** to localhost development database
-
-## Deployment Support
-- **Environment-based configuration** for development and production
-- **Static file serving** for single-server deployment
-- **Port configuration** with fallback to port 5000
-- **Database URL parsing** for various hosting providers (Railway, Render, Fly.io)
-
-# Replit Environment Setup (October 2025)
-
-## Development Configuration
-- **Frontend**: Webpack dev server on port 5000 (0.0.0.0) with proxy to backend
-- **Backend**: Express.js server on port 3001 (localhost)
-- **Database**: Replit-managed PostgreSQL database
-- **Workflow**: Single "Full Stack Server" workflow runs both frontend and backend using concurrently
-
-## Environment Variables (Auto-configured by Replit)
-- `DATABASE_URL` - PostgreSQL connection string
-- `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` - Database credentials
-
-## Database Initialization
-- Run POST request to `/api/init-db` to create tables and seed default data
-- Default users: admin/admin123 (admin role), staff1/staff123 (staff role)
-- Creates tables: users, menu, orders with proper indexes
-
-## Production Deployment
-- Build command: `npm run build` (creates optimized bundle in /dist)
-- Run command: `node server.js` (serves static files and API)
-- Deployment target: Autoscale (stateless application)
+- **Webpack** - Module bundler
+- **Babel** - JavaScript transpiler
+- **React Scripts** - Create React App tooling
 
 # Recent Changes
 
-## Fresh GitHub Import and Complete Setup (October 2, 2025)
-- Successfully imported Shawarma Boss POS from GitHub to Replit as a fresh clone
-- Installed all npm dependencies (667 packages including webpack, React, Express, PostgreSQL drivers)
-- Created and configured PostgreSQL database with Replit's managed database service
-- Initialized database with default users (admin/admin123, staff1/staff123) and 3 default menu items
-- Configured Full Stack Server workflow using `npm run dev:full` command:
-  - Frontend: Webpack dev server on port 5000 (0.0.0.0) with allowedHosts: 'all'
-  - Backend: Express.js API server on port 3001 (localhost)
-  - Uses concurrently to run both servers simultaneously
-- Set up deployment configuration for production:
-  - Build: `npm run build` (creates optimized bundle in /dist)
-  - Run: `node server.js` (serves static files and API on port 5000)
-  - Target: Autoscale (stateless application)
-- Verified all API endpoints working correctly:
-  - `/api/health` - Server health check
-  - `/api/menu` - Menu items retrieval
-  - `/api/init-db` - Database initialization
-- Frontend loads correctly with login page displaying Shawarma Boss branding
-- PWA features active: Service Worker registered, IndexedDB initialized
+## Reset & Offline Functionality Updates (October 2, 2025)
 
-## Bug Fixes (October 2, 2025)
-- **Staff Deletion Foreign Key Fix**: Fixed staff deletion error by nullifying orders.staff field before deleting users. This prevents foreign key constraint violations when deleting staff members who have associated orders.
-- **Login Error Messages**: Improved login error handling with user-friendly messages ("Invalid username or password" instead of generic errors). Added toast notifications for login success and failure with clear feedback.
-- **Login Success Notification**: Added welcome toast notification when users successfully log in, showing "Welcome back, [username]!"
+### POS Reset Behavior Change
+- Modified reset endpoint to leave system completely empty after reset
+- Reset no longer creates default menu items or staff accounts  
+- Admin users must manually add all menu items and staff after reset
+- Only admin accounts are preserved (all staff accounts deleted during reset)
+- Provides true clean slate for admins to set up custom menu and team
 
-## Enhanced Admin Panel Features
+### Service Worker Resilience Fix
+- Fixed Service Worker installation failures caused by blocked resources (403 errors)
+- Changed from `cache.addAll()` to individual asset caching with error handling
+- Service Worker now skips resources that return 403 or other errors gracefully
+- PWA continues to work even when some assets can't be cached
+- Added detailed console warnings for skipped or failed assets
 
-### Staff Management
-- **View/Edit Staff Details** - Modal interface for viewing and editing staff information
-- **Reset Password** - Direct password reset functionality for staff members
-- **Delete Staff** - Remove staff members with confirmation dialog
-- **Assign Roles** - Ability to change staff roles (admin/staff) via StaffDetailsModal
-- **Activate/Deactivate** - Toggle staff member active status
-- **POS System Reset** - Factory reset feature for admins to clear all test/trial data and start fresh
-  - Deletes all orders
-  - Removes all staff users (except admins)
-  - Resets menu items to defaults
-  - Creates default staff account (staff1/staff123)
-  - Requires admin password verification for security
-  - Triple confirmation (2 warnings + password prompt)
-
-### Menu Items Management
-- **View/Edit Details** - Comprehensive modal (MenuDetailsModal) for viewing and editing menu items
-- **Update Price** - Direct price modification for menu items
-- **Change Category** - Categorize items (General, Shawarma, Wraps, Sides, Drinks, Desserts)
-- **Toggle Availability** - Mark items as available/unavailable (out of stock) independently of inventory
-- **Duplicate Item** - Quick duplication of menu items with "(Copy)" suffix
-- **Delete Item** - Remove menu items with confirmation dialog
-- **Category Display** - Visual category badges in menu table
-- **Stock Management** - In-line stock quantity updates with immediate database sync
-
-### Backend API Enhancements
-- **PATCH /api/menu** - Update menu item details (name, price, category, availability)
-- **DELETE /api/menu** - Remove menu items from database
-- **POST /api/menu** (duplicate) - Clone existing menu items
-- **Enhanced GET /api/menu** - Returns category and availability status
-- **POST /api/reset-pos** - Factory reset endpoint (admin-only, password-verified)
-- **Full CRUD operations** - Complete Create, Read, Update, Delete for both staff and menu items
-
-## POS System Reset Feature (October 2, 2025)
-Added comprehensive factory reset functionality for admins to start with a clean operating state:
-- **Security**: Requires admin username + password verification using bcrypt
-- **Authorization**: Role-checked to ensure only admin users can trigger reset
-- **Transaction Safety**: All operations wrapped in database transaction (BEGIN/COMMIT/ROLLBACK)
-- **User Confirmation**: Triple-layer confirmation (2 warnings + password prompt) to prevent accidental resets
-- **Factory Reset Actions**:
-  - Clears all orders (complete order history deletion)
-  - Removes all staff users except admin accounts
-  - Deletes all menu items and resets to 3 default shawarma items
-  - Creates default staff account (staff1/staff123)
-- **UI Location**: Admin Panel → Staff Management section (visible only to admin role)
-- **Use Case**: Perfect for clearing test data or resetting shop to fresh state
-
-## Progressive Web App (PWA) Implementation (October 2, 2025)
-Transformed Shawarma Boss POS into a complete Progressive Web App with offline-first capabilities:
-
-### PWA Infrastructure
-- **Service Worker** (`public/service-worker.js`)
-  - Cache-first strategy for static assets (HTML, CSS, JS, images, fonts)
-  - Network-first with fallback for API calls
-  - Automatic cache versioning and cleanup
-  - Background sync support for offline order processing
-  - Offline fallback page for unavailable routes
-- **Web App Manifest** (`public/manifest.json`)
-  - Installability support for mobile and desktop
-  - Custom app icons (192x192, 512x512)
-  - Standalone display mode for native app experience
-  - Themed splash screens and UI
-
-### Offline Data Management
-- **IndexedDB Storage** (`src/services/db.js`)
-  - Four object stores: orders, menu, staff, syncQueue
-  - Offline order storage with automatic sync when online
-  - Menu and staff data caching for offline access
-  - Sync queue for reliable data synchronization
-  - Uses numeric keys (0/1) for synced field to ensure IndexedDB compatibility
-- **Sync Manager** (`src/services/sync.js`)
-  - Automatic background sync when network becomes available
-  - Manual sync trigger for pending orders
-  - Retry logic for failed syncs with exponential backoff
-  - Real-time pending order count tracking
-  - Event-driven sync notifications
-
-### Network Management
-- **Network Status Monitor** (`src/services/network.js`)
-  - Real-time online/offline detection
-  - Observable pattern for network state changes
-  - Automatic reconnection handling
-  - Browser and service worker integration
-
-### PWA Context & UI
-- **PWA Context Provider** (`src/services/PWAContext.js`)
-  - Global PWA state management using React Context API
-  - Service worker registration and lifecycle management
-  - Install prompt handling for "Add to Home Screen"
-  - Centralized network status and sync state
-- **PWA Status Component** (`src/components/PWAStatus.js`)
-  - Visual network status indicator (online/offline)
-  - Pending orders count badge
-  - Install app button when available
-  - Sync status with manual sync trigger
-  - Floating action button design for easy access
-
-### Webpack Configuration Updates
-- **Copy Plugin** - Automatically copies service worker to dist folder in both development and production
-- **Public Assets** - Proper handling of manifest.json and icons
-- **Source Maps** - Enhanced debugging support for PWA features
-
-### Features & Benefits
-- **Works Offline** - Full POS functionality without internet connection
-- **Installable** - Can be installed on mobile/desktop home screen
-- **Fast Loading** - Cached assets load instantly
-- **Reliable Sync** - Orders never lost, automatically sync when online
-- **Real-time Status** - Always know connection and sync status
-- **Native Experience** - Runs like a native app when installed
+## GitHub Import and Initial Setup (October 2, 2025)
+- Successfully imported Shawarma Boss POS from GitHub to Replit
+- Installed all npm dependencies (667 packages)
+- Created Replit-managed PostgreSQL database
+- Initialized database with tables: users, menu, orders
+- Seeded default data: admin user (admin/admin123)
+- Configured Full Stack Server workflow
+- Verified all features working correctly

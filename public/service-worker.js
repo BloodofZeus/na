@@ -20,11 +20,25 @@ const API_CACHEABLE = [
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker...');
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => {
+    caches.open(STATIC_CACHE).then(async (cache) => {
       console.log('[SW] Caching static assets');
-      return cache.addAll(STATIC_ASSETS);
+      
+      // Cache assets individually to avoid 403 errors breaking the entire installation
+      for (const asset of STATIC_ASSETS) {
+        try {
+          const response = await fetch(asset);
+          if (response.ok) {
+            await cache.put(asset, response);
+            console.log(`[SW] Cached: ${asset}`);
+          } else {
+            console.warn(`[SW] Skipped (${response.status}): ${asset}`);
+          }
+        } catch (err) {
+          console.warn(`[SW] Failed to cache ${asset}:`, err.message);
+        }
+      }
     }).catch((err) => {
-      console.error('[SW] Failed to cache static assets:', err);
+      console.error('[SW] Failed to open cache:', err);
     })
   );
   self.skipWaiting();

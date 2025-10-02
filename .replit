@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "bash"]
+modules = ["nodejs-20", "web", "bash", "postgresql-16"]
 [agent]
 expertMode = true
 
@@ -43,6 +43,10 @@ localPort = 34703
 externalPort = 3002
 
 [[ports]]
+localPort = 39121
+externalPort = 5000
+
+[[ports]]
 localPort = 41983
 externalPort = 3003
 
@@ -56,5 +60,5 @@ externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["node", "server.js"]
+run = ["bash", "-c", "NODE_ENV=production node server.js"]
 build = ["npm", "run", "build"]
