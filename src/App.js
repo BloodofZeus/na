@@ -7,6 +7,7 @@ import Admin from './components/Admin';
 import { AuthProvider, useAuth } from './services/AuthContext';
 import { CartProvider } from './services/CartContext';
 import { ToastProvider } from './components/ToastContainer';
+import { NotificationProvider } from './services/NotificationContext';
 import './App.css';
 
 function AppContent() {
@@ -47,11 +48,13 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <CartProvider>
-          <ToastProvider>
-            <AppContent />
-          </ToastProvider>
-        </CartProvider>
+        <NotificationProvider>
+          <CartProvider>
+            <ToastProvider>
+              <AppContent />
+            </ToastProvider>
+          </CartProvider>
+        </NotificationProvider>
       </AuthProvider>
     </Router>
   );

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { useCart } from '../services/CartContext';
+import { useNotifications } from '../services/NotificationContext';
 import { getMenu, createOrder, updateMenuStock } from '../services/api';
 import MenuGrid from './MenuGrid';
 import Cart from './Cart';
@@ -12,6 +13,7 @@ const POS = () => {
   const location = useLocation();
   const { user } = useAuth();
   const { cartItems, clearCart, getCartTotal } = useCart();
+  const { notifyOrder, notifyInventory } = useNotifications();
   const [menu, setMenu] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -102,11 +104,27 @@ const POS = () => {
       const result = await createOrder(order);
       console.log('Order creation result:', result);
 
-      // Update stock for each item
+      // Update stock for each item and check for low stock
       for (const item of cartItems) {
         const menuItem = menu.find(m => m.id === item.id);
         if (menuItem && menuItem.stock >= item.quantity) {
-          await updateMenuStock(item.id, menuItem.stock - item.quantity);
+          const newStock = menuItem.stock - item.quantity;
+          await updateMenuStock(item.id, newStock);
+          
+          // Check for low stock and notify
+          if (newStock <= 5 && newStock > 0) {
+            notifyInventory(
+              `Low stock alert: ${menuItem.name} (${newStock} left)`,
+              menuItem.name,
+              'high'
+            );
+          } else if (newStock === 0) {
+            notifyInventory(
+              `Out of stock: ${menuItem.name}`,
+              menuItem.name,
+              'high'
+            );
+          }
         }
       }
 
@@ -122,6 +140,13 @@ const POS = () => {
           }
           return menuItem;
         })
+      );
+
+      // Add order notification
+      notifyOrder(
+        `New order #${order.id.slice(-8)} created - GHS ${order.total.toFixed(2)}`,
+        order.id,
+        'high'
       );
 
       // Save to recent orders

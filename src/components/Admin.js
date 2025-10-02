@@ -3,12 +3,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { getStaff, addStaff, getMenu, addMenuItem, updateMenuItem, deleteMenuItem, getOrders } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { useToast } from './ToastContainer';
+import { useNotifications } from '../services/NotificationContext';
 import StaffDetailsModal from './StaffDetailsModal';
 import MenuDetailsModal from './MenuDetailsModal';
 
 const Admin = () => {
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
+  const { notifyStaff, notifyInventory, notifySystem } = useNotifications();
   const location = useLocation();
   const navigate = useNavigate();
   const [staff, setStaff] = useState([]);
@@ -77,6 +79,30 @@ const Admin = () => {
       setMenu(menuData);
       setOrders(ordersData);
       setError('');
+      
+      // Check for low stock items and notify
+      const lowStockItems = menuData.filter(item => item.stock <= 5 && item.stock > 0);
+      const outOfStockItems = menuData.filter(item => item.stock === 0);
+      
+      if (lowStockItems.length > 0) {
+        lowStockItems.forEach(item => {
+          notifyInventory(
+            `Low stock alert: ${item.name} (${item.stock} left)`,
+            item.name,
+            'high'
+          );
+        });
+      }
+      
+      if (outOfStockItems.length > 0) {
+        outOfStockItems.forEach(item => {
+          notifyInventory(
+            `Out of stock: ${item.name}`,
+            item.name,
+            'high'
+          );
+        });
+      }
     } catch (error) {
       console.error('Error loading admin data:', error);
       setError('Failed to load admin data. Please refresh.');
@@ -97,6 +123,13 @@ const Admin = () => {
       await loadAllData();
       setNewStaff({ username: '', password: '', role: 'staff' });
       showSuccess('Staff member added successfully!');
+      
+      // Add notification for new staff
+      notifyStaff(
+        `New ${newStaff.role} added: ${newStaff.username}`,
+        newStaff.username,
+        'medium'
+      );
     } catch (error) {
       console.error('Error adding staff:', error);
       showError('Failed to add staff member');
@@ -111,14 +144,23 @@ const Admin = () => {
     }
 
     try {
-      await addMenuItem({
+      const menuItemData = {
         name: newMenuItem.name,
         price: parseFloat(newMenuItem.price),
         stock: parseInt(newMenuItem.stock)
-      });
+      };
+      
+      await addMenuItem(menuItemData);
       await loadAllData();
       setNewMenuItem({ name: '', price: '', stock: '' });
       showSuccess('Menu item added successfully!');
+      
+      // Add notification for new menu item
+      notifyInventory(
+        `New menu item added: ${menuItemData.name} (${menuItemData.stock} in stock)`,
+        menuItemData.name,
+        'medium'
+      );
     } catch (error) {
       console.error('Error adding menu item:', error);
       showError('Failed to add menu item');
@@ -153,6 +195,13 @@ const Admin = () => {
     try {
       await updateMenuItem(itemId, itemData);
       await loadAllData();
+      
+      // Add notification for menu item update
+      notifyInventory(
+        `Menu item updated: ${itemData.name}`,
+        itemData.name,
+        'low'
+      );
     } catch (error) {
       console.error('Error updating menu item:', error);
       throw error;
@@ -161,8 +210,18 @@ const Admin = () => {
 
   const handleDeleteMenuItem = async (itemId) => {
     try {
+      // Get item name before deletion for notification
+      const item = menu.find(m => m.id === itemId);
+      const itemName = item ? item.name : 'Unknown item';
+      
       await deleteMenuItem(itemId);
       await loadAllData();
+      
+      // Add notification for menu item deletion
+      notifySystem(
+        `Menu item deleted: ${itemName}`,
+        'medium'
+      );
     } catch (error) {
       console.error('Error deleting menu item:', error);
       throw error;
