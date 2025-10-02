@@ -1,0 +1,96 @@
+.pwa-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  margin-right: 0.75rem;
+}
+
+.pwa-status .badge {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.pwa-status .badge i {
+  font-size: 0.875rem;
+}
+
+.pwa-status .btn-sm {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.pwa-status .btn-sm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.pwa-status .btn-success {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  border: none;
+}
+
+.pwa-status .btn-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  border: none;
+  color: #212529;
+}
+
+.pwa-status .btn-warning:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pwa-status .badge.bg-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+  color: white;
+}
+
+.pwa-status .badge.bg-warning {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
+}
+
+.pwa-status .badge.bg-success {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+}
+
+.pwa-status .badge.bg-primary {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+
+.pwa-status .fa-sync.fa-spin {
+  animation: fa-spin 1s infinite linear;
+}
+
+@keyframes fa-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .pwa-status {
+    padding: 0 0.5rem;
+    margin-right: 0.5rem;
+    border-right: none;
+  }
+  
+  .pwa-status .badge {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.4rem;
+  }
+  
+  .pwa-status .btn-sm {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
