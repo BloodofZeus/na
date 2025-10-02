@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getStaff, addStaff, getMenu, addMenuItem, updateMenuItem, deleteMenuItem, getOrders } from '../services/api';
 import { useAuth } from '../services/AuthContext';
+import { useToast } from './ToastContainer';
 import StaffDetailsModal from './StaffDetailsModal';
 import MenuDetailsModal from './MenuDetailsModal';
 
 const Admin = () => {
   const { user } = useAuth();
+  const { showSuccess, showError } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const [staff, setStaff] = useState([]);
@@ -40,7 +42,6 @@ const Admin = () => {
   // Form states
   const [newStaff, setNewStaff] = useState({ username: '', password: '', role: 'staff' });
   const [newMenuItem, setNewMenuItem] = useState({ name: '', price: '', stock: '' });
-  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     loadAllData();
@@ -94,11 +95,10 @@ const Admin = () => {
       await addStaff(newStaff);
       await loadAllData();
       setNewStaff({ username: '', password: '', role: 'staff' });
-      setSuccessMessage('Staff member added successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      showSuccess('Staff member added successfully!');
     } catch (error) {
       console.error('Error adding staff:', error);
-      setError('Failed to add staff member');
+      showError('Failed to add staff member');
     }
   };
 
@@ -117,11 +117,10 @@ const Admin = () => {
       });
       await loadAllData();
       setNewMenuItem({ name: '', price: '', stock: '' });
-      setSuccessMessage('Menu item added successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      showSuccess('Menu item added successfully!');
     } catch (error) {
       console.error('Error adding menu item:', error);
-      setError('Failed to add menu item');
+      showError('Failed to add menu item');
     }
   };
 
@@ -153,11 +152,8 @@ const Admin = () => {
     try {
       await updateMenuItem(itemId, itemData);
       await loadAllData();
-      setSuccessMessage('Menu item updated successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       console.error('Error updating menu item:', error);
-      setError('Failed to update menu item');
       throw error;
     }
   };
@@ -166,11 +162,8 @@ const Admin = () => {
     try {
       await deleteMenuItem(itemId);
       await loadAllData();
-      setSuccessMessage('Menu item deleted successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       console.error('Error deleting menu item:', error);
-      setError('Failed to delete menu item');
       throw error;
     }
   };

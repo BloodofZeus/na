@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { updateMenuStock, toggleMenuItemAvailability, duplicateMenuItem } from '../services/api';
+import { useToast } from './ToastContainer';
 
 const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete, onRefresh }) => {
+  const { showSuccess, showError } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdatingStock, setIsUpdatingStock] = useState(false);
   const [formData, setFormData] = useState({
@@ -12,8 +14,6 @@ const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete, onRefresh }) 
     stock: 0
   });
   const [stockValue, setStockValue] = useState(0);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (menuItem) {
@@ -27,16 +27,6 @@ const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete, onRefresh }) 
       setStockValue(menuItem.stock || 0);
     }
   }, [menuItem]);
-
-  const showSuccess = (message) => {
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(''), 3000);
-  };
-
-  const showError = (message) => {
-    setErrorMessage(message);
-    setTimeout(() => setErrorMessage(''), 3000);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -118,19 +108,6 @@ const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete, onRefresh }) 
         </div>
 
         <div className="modal-body">
-          {successMessage && (
-            <div className="alert alert-success alert-dismissible fade show" role="alert">
-              <i className="fas fa-check-circle me-2"></i>
-              {successMessage}
-            </div>
-          )}
-          {errorMessage && (
-            <div className="alert alert-danger alert-dismissible fade show" role="alert">
-              <i className="fas fa-exclamation-circle me-2"></i>
-              {errorMessage}
-            </div>
-          )}
-
           {!isEditing ? (
             <div className="menu-details">
               <div className="detail-row">

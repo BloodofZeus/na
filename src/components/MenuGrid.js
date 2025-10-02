@@ -5,6 +5,9 @@ const MenuGrid = ({ menu }) => {
   const { addToCart } = useCart();
   const [quantities, setQuantities] = useState({});
 
+  // Filter out unavailable items
+  const availableMenu = menu.filter(item => item.is_available !== false);
+
   const handleQuantityChange = (itemId, quantity) => {
     setQuantities(prev => ({
       ...prev,
@@ -34,7 +37,7 @@ const MenuGrid = ({ menu }) => {
 
   return (
     <div className="pos-menu-grid">
-      {menu.map((item) => {
+      {availableMenu.map((item) => {
         const stockStatus = getStockStatus(item.stock);
         const quantity = quantities[item.id] || 1;
         
@@ -99,7 +102,7 @@ const MenuGrid = ({ menu }) => {
         );
       })}
       
-      {menu.length === 0 && (
+      {availableMenu.length === 0 && (
         <div className="no-menu-items">
           <i className="fas fa-utensils fa-3x text-muted mb-3"></i>
           <p className="text-muted mb-0">No menu items available</p>
