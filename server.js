@@ -4,7 +4,7 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3001; // Use different port from frontend
+const PORT = process.env.PORT || (process.env.NODE_ENV === 'production' ? 5000 : 3001);
 
 // Middleware
 app.use(cors());
@@ -76,9 +76,10 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, 'localhost', () => {
-  console.log(`🚀 API Server running on http://localhost:${PORT}`);
-  console.log(`📊 Health check available at http://localhost:${PORT}/api/health`);
+const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 API Server running on http://${HOST}:${PORT}`);
+  console.log(`📊 Health check available at http://${HOST}:${PORT}/api/health`);
 });
 
 module.exports = app;
