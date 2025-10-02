@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getStaff, addStaff, getMenu, addMenuItem, updateMenuStock, getOrders } from '../services/api';
+import { getStaff, addStaff, updateStaff, deleteStaff, resetStaffPassword, getMenu, addMenuItem, updateMenuStock, getOrders } from '../services/api';
 import { useAuth } from '../services/AuthContext';
+import StaffDetailsModal from './StaffDetailsModal';
 
 const Admin = () => {
   const { user } = useAuth();
@@ -14,6 +15,8 @@ const Admin = () => {
   const [error, setError] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showStaffDetailsModal, setShowStaffDetailsModal] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState(null);
 
   // Get active section from URL query parameters
   const getActiveSection = () => {
@@ -138,6 +141,19 @@ const Admin = () => {
       ...prev,
       [itemId]: value
     }));
+  };
+
+  const handleViewStaffDetails = (staffMember) => {
+    setSelectedStaff(staffMember);
+    setShowStaffDetailsModal(true);
+  };
+
+  const handleStaffUpdate = async () => {
+    await loadAllData();
+  };
+
+  const handleStaffDelete = async () => {
+    await loadAllData();
   };
 
   const exportData = () => {
@@ -342,6 +358,9 @@ const Admin = () => {
                       <span className={`badge ${member.role === 'admin' ? 'bg-danger' : 'bg-primary'}`}>
                         {member.role}
                       </span>
+                      {!member.is_active && (
+                        <span className="badge bg-secondary ms-1">Inactive</span>
+                      )}
                     </div>
                   </div>
                   <div className="staff-card-body">
@@ -360,10 +379,32 @@ const Admin = () => {
                     )}
                   </div>
                   <div className="staff-card-actions">
-                    <button className="btn btn-sm btn-outline-primary">
+                    <button 
+                      className="btn btn-sm btn-outline-info me-1"
+                      onClick={() => handleViewStaffDetails(member)}
+                      title="View Details"
+                    >
+                      <i className="fas fa-eye"></i>
+                    </button>
+                    <button 
+                      className="btn btn-sm btn-outline-primary me-1"
+                      onClick={() => handleViewStaffDetails(member)}
+                      title="Edit Staff"
+                    >
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button className="btn btn-sm btn-outline-danger">
+                    <button 
+                      className="btn btn-sm btn-outline-warning me-1"
+                      onClick={() => handleViewStaffDetails(member)}
+                      title="Reset Password"
+                    >
+                      <i className="fas fa-key"></i>
+                    </button>
+                    <button 
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => handleViewStaffDetails(member)}
+                      title="Delete Staff"
+                    >
                       <i className="fas fa-trash"></i>
                     </button>
                   </div>
@@ -692,6 +733,19 @@ const Admin = () => {
         
         {renderContent()}
       </div>
+
+      {/* Staff Details Modal */}
+      {showStaffDetailsModal && selectedStaff && (
+        <StaffDetailsModal
+          staff={selectedStaff}
+          onClose={() => {
+            setShowStaffDetailsModal(false);
+            setSelectedStaff(null);
+          }}
+          onUpdate={handleStaffUpdate}
+          onDelete={handleStaffDelete}
+        />
+      )}
     </div>
   );
 };

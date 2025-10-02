@@ -65,6 +65,33 @@ export const addStaff = async (staffData) => {
   }
 };
 
+export const updateStaff = async (username, staffData) => {
+  try {
+    const response = await api.put('/staff', { username, ...staffData });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to update staff member' };
+  }
+};
+
+export const deleteStaff = async (username) => {
+  try {
+    const response = await api.delete('/staff', { data: { username } });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to delete staff member' };
+  }
+};
+
+export const resetStaffPassword = async (username, newPassword) => {
+  try {
+    const response = await api.patch('/staff', { username, newPassword });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to reset password' };
+  }
+};
+
 // Orders API
 export const getOrders = async () => {
   try {
