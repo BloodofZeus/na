@@ -69,39 +69,16 @@ module.exports = async (req, res) => {
       const menuResult = await client.query('DELETE FROM menu');
       const menuDeleted = menuResult.rowCount;
 
-      // 4. Insert default menu items
-      const defaultMenu = [
-        { id: 'm-1', name: 'Shawarma Wrap', price: 20, stock: 25 },
-        { id: 'm-2', name: 'Chicken Shawarma', price: 25, stock: 20 },
-        { id: 'm-3', name: 'Beef Shawarma', price: 28, stock: 18 }
-      ];
-
-      for (const item of defaultMenu) {
-        await client.query(
-          'INSERT INTO menu (id, name, price, stock) VALUES ($1, $2, $3, $4)',
-          [item.id, item.name, item.price, item.stock]
-        );
-      }
-
-      // 5. Create default staff user
-      const saltRounds = 10;
-      const defaultStaffPassword = await bcrypt.hash('staff123', saltRounds);
-      await client.query(
-        'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) ON CONFLICT (username) DO NOTHING',
-        ['staff1', defaultStaffPassword, 'staff']
-      );
-
+      // Reset complete - no default data created
       await client.query('COMMIT');
 
       res.json({
         ok: true,
-        message: 'POS system reset successfully',
+        message: 'POS system reset successfully - all data cleared',
         details: {
           ordersDeleted,
           staffDeleted,
-          menuItemsDeleted: menuDeleted,
-          menuItemsCreated: defaultMenu.length,
-          defaultStaffCreated: 1
+          menuItemsDeleted: menuDeleted
         },
         timestamp: new Date().toISOString()
       });
