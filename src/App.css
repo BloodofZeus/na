@@ -539,7 +539,8 @@
 }
 
 /* ===== FORM STYLING ===== */
-.add-staff-form .form-group {
+.add-staff-form .form-group,
+.add-menu-form .form-group {
   margin-bottom: 1.25rem;
 }
 
@@ -560,6 +561,42 @@
 .form-control:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ===== STATS GRID ===== */
+.stats-grid {
+  gap: 1rem;
+}
+
+.stat-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.stat-item:hover {
+  background: white;
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* ===== MOBILE ADMIN LAYOUT ===== */

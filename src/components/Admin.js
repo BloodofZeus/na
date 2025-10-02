@@ -22,6 +22,7 @@ const Admin = () => {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [showMenuDetailsModal, setShowMenuDetailsModal] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Get active section from URL query parameters
   const getActiveSection = () => {
@@ -460,13 +461,17 @@ const Admin = () => {
   );
 
   const renderMenuManagement = () => (
-    <div className="row">
-      <div className="col-lg-8">
-        <div className="card">
-          <div className="card-header">
-            <h4 className="font-bold text-danger mb-0">Menu Items</h4>
+    <div className="menu-management-container">
+      <div className="admin-grid-layout d-flex flex-column flex-xl-row gap-4">
+        {/* Menu Items Panel */}
+        <div className="admin-panel flex-fill">
+          <div className="panel-header">
+            <h4 className="panel-title">
+              <i className="fas fa-utensils me-2"></i>
+              Menu Items
+            </h4>
           </div>
-          <div className="card-body">
+          <div className="panel-body">
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead className="table-light">
@@ -515,38 +520,43 @@ const Admin = () => {
             </div>
           </div>
         </div>
-      </div>
-      
-      <div className="col-lg-4">
-        <div className="card">
-          <div className="card-header">
-            <h4 className="font-bold text-danger mb-0">Add New Item</h4>
+        
+        {/* Add Menu Item Panel */}
+        <div className="admin-panel" style={{minWidth: '320px'}}>
+          <div className="panel-header">
+            <h4 className="panel-title">
+              <i className="fas fa-plus me-2"></i>
+              Add New Item
+            </h4>
           </div>
-          <div className="card-body">
-            <form onSubmit={handleAddMenuItem}>
-              <div className="mb-3">
+          <div className="panel-body">
+            <form onSubmit={handleAddMenuItem} className="add-menu-form">
+              <div className="form-group">
+                <label className="form-label">Item Name</label>
                 <input
                   type="text"
-                  placeholder="Item name"
+                  placeholder="Enter item name"
                   value={newMenuItem.name}
                   onChange={(e) => setNewMenuItem({...newMenuItem, name: e.target.value})}
                   className="form-control"
                 />
               </div>
-              <div className="mb-3">
+              <div className="form-group">
+                <label className="form-label">Price (GHS)</label>
                 <input
                   type="number"
                   step="0.01"
-                  placeholder="Price (GHS)"
+                  placeholder="Enter price"
                   value={newMenuItem.price}
                   onChange={(e) => setNewMenuItem({...newMenuItem, price: e.target.value})}
                   className="form-control"
                 />
               </div>
-              <div className="mb-3">
+              <div className="form-group">
+                <label className="form-label">Initial Stock</label>
                 <input
                   type="number"
-                  placeholder="Initial Stock"
+                  placeholder="Enter stock quantity"
                   value={newMenuItem.stock}
                   onChange={(e) => setNewMenuItem({...newMenuItem, stock: e.target.value})}
                   className="form-control"
@@ -564,54 +574,66 @@ const Admin = () => {
   );
 
   const renderRecentOrders = () => (
-    <div className="card">
-      <div className="card-header">
-        <h4 className="font-bold text-danger mb-0">Recent Orders</h4>
-      </div>
-      <div className="card-body">
-        <div className="table-responsive">
-          <table className="table table-hover">
-            <thead className="table-light">
-              <tr>
-                <th>Order ID</th>
-                <th>Staff</th>
-                <th>Date & Time</th>
-                <th>Total</th>
-                <th>Items</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.slice(0, 20).map((order) => (
-                <tr key={order.id}>
-                  <td className="font-mono">#{order.id.slice(-8)}</td>
-                  <td>{order.staff}</td>
-                  <td>{new Date(order.timestamp).toLocaleString()}</td>
-                  <td className="fw-bold text-success">GHS {parseFloat(order.total || 0).toFixed(2)}</td>
-                  <td className="text-sm">
-                    {order.payload?.items?.slice(0, 2).map(item => item.name).join(', ')}
-                    {order.payload?.items?.length > 2 && '...'}
-                  </td>
+    <div className="orders-container">
+      <div className="admin-panel">
+        <div className="panel-header">
+          <h4 className="panel-title">
+            <i className="fas fa-receipt me-2"></i>
+            Recent Orders
+          </h4>
+        </div>
+        <div className="panel-body">
+          <div className="table-responsive">
+            <table className="table table-hover">
+              <thead className="table-light">
+                <tr>
+                  <th>Order ID</th>
+                  <th>Staff</th>
+                  <th>Date & Time</th>
+                  <th>Total</th>
+                  <th>Items</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {orders.length === 0 && (
-            <div className="text-center py-4 text-muted">No orders yet</div>
-          )}
+              </thead>
+              <tbody>
+                {orders.slice(0, 20).map((order) => (
+                  <tr key={order.id}>
+                    <td className="font-mono">#{order.id.slice(-8)}</td>
+                    <td>{order.staff}</td>
+                    <td>{new Date(order.timestamp).toLocaleString()}</td>
+                    <td className="fw-bold text-success">GHS {parseFloat(order.total || 0).toFixed(2)}</td>
+                    <td className="text-sm">
+                      {order.payload?.items?.slice(0, 2).map(item => item.name).join(', ')}
+                      {order.payload?.items?.length > 2 && '...'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {orders.length === 0 && (
+              <div className="text-center py-4 text-muted">
+                <i className="fas fa-inbox fa-3x mb-3 text-muted"></i>
+                <p>No orders yet</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 
   const renderReportsExport = () => (
-    <div className="row">
-      <div className="col-lg-6">
-        <div className="card mb-4">
-          <div className="card-header">
-            <h4 className="font-bold text-danger mb-0">Export Options</h4>
+    <div className="reports-container">
+      <div className="admin-grid-layout d-flex flex-column flex-lg-row gap-4">
+        {/* Export Options Panel */}
+        <div className="admin-panel flex-fill">
+          <div className="panel-header">
+            <h4 className="panel-title">
+              <i className="fas fa-download me-2"></i>
+              Export Options
+            </h4>
           </div>
-          <div className="card-body">
-            <div className="d-grid gap-2">
+          <div className="panel-body">
+            <div className="d-grid gap-3">
               <button onClick={exportData} className="btn btn-outline-danger">
                 <i className="fas fa-download me-2"></i>
                 Export JSON Data
@@ -627,30 +649,32 @@ const Admin = () => {
             </div>
           </div>
         </div>
-      </div>
-      
-      <div className="col-lg-6">
-        <div className="card">
-          <div className="card-header">
-            <h4 className="font-bold text-danger mb-0">Quick Stats</h4>
+        
+        {/* Quick Stats Panel */}
+        <div className="admin-panel flex-fill">
+          <div className="panel-header">
+            <h4 className="panel-title">
+              <i className="fas fa-chart-bar me-2"></i>
+              Quick Stats
+            </h4>
           </div>
-          <div className="card-body">
-            <div className="row text-center">
-              <div className="col-6 mb-3">
-                <div className="h4 text-primary mb-0">{menu.length}</div>
-                <small className="text-muted">Menu Items</small>
+          <div className="panel-body">
+            <div className="stats-grid d-flex flex-wrap gap-3">
+              <div className="stat-item flex-fill text-center">
+                <div className="stat-value text-primary">{menu.length}</div>
+                <div className="stat-label">Menu Items</div>
               </div>
-              <div className="col-6 mb-3">
-                <div className="h4 text-warning mb-0">{staff.length}</div>
-                <small className="text-muted">Staff Members</small>
+              <div className="stat-item flex-fill text-center">
+                <div className="stat-value text-warning">{staff.length}</div>
+                <div className="stat-label">Staff Members</div>
               </div>
-              <div className="col-6">
-                <div className="h4 text-success mb-0">{orders.length}</div>
-                <small className="text-muted">Total Orders</small>
+              <div className="stat-item flex-fill text-center">
+                <div className="stat-value text-success">{orders.length}</div>
+                <div className="stat-label">Total Orders</div>
               </div>
-              <div className="col-6">
-                <div className="h4 text-info mb-0">GHS {salesStats.totalSales.toFixed(2)}</div>
-                <small className="text-muted">Total Revenue</small>
+              <div className="stat-item flex-fill text-center">
+                <div className="stat-value text-info">GHS {salesStats.totalSales.toFixed(2)}</div>
+                <div className="stat-label">Total Revenue</div>
               </div>
             </div>
           </div>
