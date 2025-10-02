@@ -13,6 +13,7 @@ const POS = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const [currentOrder, setCurrentOrder] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
   const [activeSection, setActiveSection] = useState('pos');
 
@@ -96,7 +97,8 @@ const POS = () => {
       setRecentOrders(newRecentOrders);
       localStorage.setItem('shawarma_boss_recent_orders', JSON.stringify(newRecentOrders));
 
-      // Show order modal
+      // Set current order and show modal
+      setCurrentOrder(order);
       setShowOrderModal(true);
 
       // Clear cart
@@ -435,10 +437,13 @@ const POS = () => {
       </div>
 
       {/* Order Success Modal */}
-      {showOrderModal && (
+      {showOrderModal && currentOrder && (
         <OrderModal
-          order={recentOrders[0]}
-          onClose={() => setShowOrderModal(false)}
+          order={currentOrder}
+          onClose={() => {
+            setShowOrderModal(false);
+            setCurrentOrder(null);
+          }}
         />
       )}
     </div>
