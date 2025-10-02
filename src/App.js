@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from './services/AuthContext';
 import { CartProvider } from './services/CartContext';
 import { ToastProvider } from './components/ToastContainer';
 import { NotificationProvider } from './services/NotificationContext';
+import { PWAProvider } from './services/PWAContext';
 import './App.css';
 
 function AppContent() {
@@ -47,15 +48,17 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <NotificationProvider>
-          <CartProvider>
-            <ToastProvider>
-              <AppContent />
-            </ToastProvider>
-          </CartProvider>
-        </NotificationProvider>
-      </AuthProvider>
+      <PWAProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <CartProvider>
+              <ToastProvider>
+                <AppContent />
+              </ToastProvider>
+            </CartProvider>
+          </NotificationProvider>
+        </AuthProvider>
+      </PWAProvider>
     </Router>
   );
 }

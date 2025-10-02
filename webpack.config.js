@@ -111,19 +111,17 @@ module.exports = (env, argv) => {
       // React Fast Refresh for development
       ...(!isProduction ? [new ReactRefreshWebpackPlugin()] : []),
       // Copy static assets from public directory
-      ...(isProduction ? [
-        new (require('copy-webpack-plugin'))({
-          patterns: [
-            {
-              from: 'public',
-              to: '.',
-              globOptions: {
-                ignore: ['**/index.html']
-              }
+      new (require('copy-webpack-plugin'))({
+        patterns: [
+          {
+            from: 'public',
+            to: '.',
+            globOptions: {
+              ignore: ['**/index.html']
             }
-          ]
-        })
-      ] : [])
+          }
+        ]
+      })
     ],
     resolve: {
       extensions: ['.js', '.jsx'],

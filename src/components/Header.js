@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../services/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '../services/NotificationContext';
+import PWAStatus from './PWAStatus';
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -190,6 +191,9 @@ const Header = () => {
             
             {/* Right Side Actions */}
             <div className="navbar-actions">
+              {/* PWA Status */}
+              <PWAStatus />
+              
               {/* Notifications */}
               <div className="notification-wrapper">
                 <button

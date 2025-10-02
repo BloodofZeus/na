@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { useCart } from '../services/CartContext';
 import { useNotifications } from '../services/NotificationContext';
+import { usePWA } from '../services/PWAContext';
 import { getMenu, createOrder, updateMenuStock } from '../services/api';
 import MenuGrid from './MenuGrid';
 import Cart from './Cart';
@@ -14,6 +15,7 @@ const POS = () => {
   const { user } = useAuth();
   const { cartItems, clearCart, getCartTotal } = useCart();
   const { notifyOrder, notifyInventory } = useNotifications();
+  const { isOnline, dbManager, syncManager } = usePWA();
   const [menu, setMenu] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -54,12 +56,35 @@ const POS = () => {
   const loadMenu = async () => {
     try {
       setIsLoading(true);
-      const menuData = await getMenu();
-      setMenu(menuData);
-      setError('');
+      
+      if (isOnline) {
+        const menuData = await getMenu();
+        setMenu(menuData);
+        await dbManager.saveMenu(menuData);
+        setError('');
+      } else {
+        const cachedMenu = await dbManager.getMenu();
+        if (cachedMenu && cachedMenu.length > 0) {
+          setMenu(cachedMenu);
+          setError('📡 Offline - Using cached menu');
+        } else {
+          setError('⚠️ No menu available offline. Please connect to the internet.');
+        }
+      }
     } catch (error) {
       console.error('Error loading menu:', error);
-      setError('Failed to load menu. Please refresh the page.');
+      
+      try {
+        const cachedMenu = await dbManager.getMenu();
+        if (cachedMenu && cachedMenu.length > 0) {
+          setMenu(cachedMenu);
+          setError('📡 Connection failed - Using cached menu');
+        } else {
+          setError('Failed to load menu. Please refresh the page.');
+        }
+      } catch (dbError) {
+        setError('Failed to load menu. Please refresh the page.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -88,19 +113,39 @@ const POS = () => {
     }
 
     const order = {
-      id: 'order-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+      id: isOnline ? 'order-' + Date.now() + '-' + Math.floor(Math.random() * 1000) : 'offline-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
       user: user.username,
       staff: user.username,
       timestamp: new Date().toISOString(),
       items: cartItems,
       total: getCartTotal(),
-      status: 'completed'
+      status: isOnline ? 'completed' : 'pending'
     };
 
     try {
       console.log('Creating order with data:', order);
       
-      // Save order to backend
+      if (!isOnline) {
+        await syncManager.saveOfflineOrder(order);
+        console.log('Order saved offline:', order.id);
+        
+        notifyOrder(
+          `📴 Offline order #${order.id.slice(-8)} saved - GHS ${order.total.toFixed(2)} (Will sync when online)`,
+          order.id,
+          'high'
+        );
+
+        const newRecentOrders = [{ ...order, offline: true }, ...recentOrders.slice(0, 4)];
+        setRecentOrders(newRecentOrders);
+        localStorage.setItem('shawarma_boss_recent_orders', JSON.stringify(newRecentOrders));
+
+        setCurrentOrder({ ...order, offline: true });
+        setShowOrderModal(true);
+        clearCart();
+        return;
+      }
+      
+      // Save order to backend (online)
       const result = await createOrder(order);
       console.log('Order creation result:', result);
 
