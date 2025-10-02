@@ -5,6 +5,7 @@ import { getMenu, createOrder, updateMenuStock } from '../services/api';
 import MenuGrid from './MenuGrid';
 import Cart from './Cart';
 import OrderModal from './OrderModal';
+import OrderDetailsModal from './OrderDetailsModal';
 
 const POS = () => {
   const { user } = useAuth();
@@ -14,6 +15,8 @@ const POS = () => {
   const [error, setError] = useState('');
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [currentOrder, setCurrentOrder] = useState(null);
+  const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [recentOrders, setRecentOrders] = useState([]);
   const [activeSection, setActiveSection] = useState('pos');
 
@@ -45,6 +48,11 @@ const POS = () => {
         console.error('Error loading recent orders:', error);
       }
     }
+  };
+
+  const handleViewOrderDetails = (order) => {
+    setSelectedOrder(order);
+    setShowOrderDetailsModal(true);
   };
 
   const handleConfirmOrder = async () => {
@@ -247,7 +255,25 @@ const POS = () => {
           <div className="row g-3">
             {recentOrders.map((order) => (
               <div key={order.id} className="col-md-6 col-lg-4">
-                <div className="card border">
+                <div 
+                  className="card border hover-card cursor-pointer"
+                  onClick={() => handleViewOrderDetails(order)}
+                  style={{
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    border: '1px solid #e2e8f0'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+                    e.currentTarget.style.borderColor = '#dc3545';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                  }}
+                >
                   <div className="card-body">
                     <div className="d-flex justify-content-between align-items-start mb-2">
                       <h6 className="card-title mb-0">#{order.id.slice(-6)}</h6>
@@ -259,6 +285,12 @@ const POS = () => {
                     <div className="d-flex justify-content-between">
                       <span className="text-muted">{order.items?.length || 0} items</span>
                       <span className="fw-bold text-success">GHS {parseFloat(order.total || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="mt-3 text-center">
+                      <small className="text-primary">
+                        <i className="fas fa-eye me-1"></i>
+                        Click to view details
+                      </small>
                     </div>
                   </div>
                 </div>
@@ -443,6 +475,17 @@ const POS = () => {
           onClose={() => {
             setShowOrderModal(false);
             setCurrentOrder(null);
+          }}
+        />
+      )}
+
+      {/* Order Details Modal */}
+      {showOrderDetailsModal && selectedOrder && (
+        <OrderDetailsModal
+          order={selectedOrder}
+          onClose={() => {
+            setShowOrderDetailsModal(false);
+            setSelectedOrder(null);
           }}
         />
       )}
