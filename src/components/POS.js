@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { useCart } from '../services/CartContext';
 import { getMenu, createOrder, updateMenuStock } from '../services/api';
@@ -8,6 +9,7 @@ import OrderModal from './OrderModal';
 import OrderDetailsModal from './OrderDetailsModal';
 
 const POS = () => {
+  const location = useLocation();
   const { user } = useAuth();
   const { cartItems, clearCart, getCartTotal } = useCart();
   const [menu, setMenu] = useState([]);
@@ -20,9 +22,31 @@ const POS = () => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [activeSection, setActiveSection] = useState('pos');
 
+  // Load menu on mount and when returning to this route
   useEffect(() => {
     loadMenu();
     loadRecentOrders();
+  }, [location.pathname]);
+
+  // Also refresh menu when window gains focus (e.g., different browser tabs)
+  useEffect(() => {
+    const handleFocus = () => {
+      loadMenu();
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadMenu();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const loadMenu = async () => {
