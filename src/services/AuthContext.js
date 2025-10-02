@@ -42,7 +42,15 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      return { success: false, error: 'Network error. Please try again.' };
+      
+      // Check if this is an authentication error (from server response)
+      if (error.error && typeof error.error === 'string') {
+        // This is a structured error from the API (authentication error)
+        return { success: false, error: error.error };
+      }
+      
+      // This is likely a network error (no server response)
+      return { success: false, error: 'Network error. Please check your connection and try again.' };
     }
   };
 

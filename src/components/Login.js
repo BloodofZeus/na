@@ -26,7 +26,7 @@ const Login = () => {
     try {
       const result = await login(username.trim(), password);
       if (!result.success) {
-        const errorMsg = result.error || 'Invalid username or password';
+        const errorMsg = result.error || 'Login failed. Please try again.';
         setError(errorMsg);
         showError(errorMsg);
       } else {
@@ -34,9 +34,11 @@ const Login = () => {
         setError('');
       }
     } catch (error) {
-      const errorMsg = 'Network error. Please check your connection and try again.';
+      // AuthContext should handle all errors properly, but fallback just in case
+      const errorMsg = error.message || 'Unexpected error occurred. Please try again.';
       setError(errorMsg);
       showError(errorMsg);
+      console.error('Unexpected login error:', error);
     } finally {
       setIsLoading(false);
     }
