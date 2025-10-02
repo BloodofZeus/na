@@ -1,5 +1,5 @@
 // Menu stock update endpoint for Vercel serverless with Neon database
-const { queryDBOnce, setCorsHeaders, handleOptions } = require('../_utils');
+const { queryDBOnce, setCorsHeaders, handleOptions } = require('../../_utils');
 
 module.exports = async (req, res) => {
   // Handle CORS preflight

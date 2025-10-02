@@ -45,7 +45,7 @@ const Login = () => {
               }}
             />
             <h2 className="text-xl font-bold text-danger">Shawarma Boss POS</h2>
-            <p className="text-muted text-sm mt-1">Modern MERN Stack Point of Sale</p>
+            <p className="text-muted text-sm mt-1">Delicious Shawarma, Seamless Service</p>
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -96,11 +96,11 @@ const Login = () => {
 
           <div className="mt-6 text-center text-sm text-muted">
             <div className="mb-2">
-              <strong>Demo Accounts:</strong>
+              <strong>Welcome to Shawarma Boss</strong>
             </div>
             <div className="space-y-1">
-              <div>Admin: <code>admin</code> / <code>admin123</code></div>
-              <div>Staff: <code>staff1</code> / <code>staff123</code></div>
+              <div>Your trusted partner in delicious shawarma</div>
+              <div className="text-xs opacity-75">Secure • Fast • Reliable</div>
             </div>
           </div>
         </div>

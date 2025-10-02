@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -18,6 +19,13 @@ module.exports = (env, argv) => {
       port: 5000,
       allowedHosts: 'all',
       historyApiFallback: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
       static: {
         directory: path.join(__dirname, 'dist'),
       },
@@ -100,6 +108,8 @@ module.exports = (env, argv) => {
           minifyURLs: true
         } : false
       }),
+      // React Fast Refresh for development
+      ...(!isProduction ? [new ReactRefreshWebpackPlugin()] : []),
       // Copy static assets from public directory
       ...(isProduction ? [
         new (require('copy-webpack-plugin'))({

@@ -4,15 +4,23 @@ const { Pool } = require('pg');
 // Database connection configuration optimized for Neon serverless
 const getDatabaseConfig = () => {
   // Priority order for Neon database connection
-  const DATABASE_URL = process.env.DATABASE_URL || 
-    process.env.POSTGRES_URL || 
-    process.env.POSTGRES_PRISMA_URL ||
-    process.env.PGURL || 
-    `postgresql://${process.env.PGUSER || process.env.POSTGRES_USER || 'postgres'}:${process.env.PGPASSWORD || process.env.POSTGRES_PASSWORD || 'postgres'}@${process.env.PGHOST || process.env.POSTGRES_HOST || 'localhost'}:${process.env.PGPORT || 5432}/${process.env.PGDATABASE || process.env.POSTGRES_DATABASE || 'neondb'}`;
+  let DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  
+  // Clean up any extra characters from the URL
+  if (DATABASE_URL && DATABASE_URL.startsWith('=')) {
+    DATABASE_URL = DATABASE_URL.substring(1);
+  }
+  
+  // If no URL, construct from individual components
+  if (!DATABASE_URL) {
+    DATABASE_URL = `postgresql://${process.env.PGUSER}:${process.env.PGPASSWORD}@${process.env.PGHOST}:${process.env.PGPORT || 5432}/${process.env.PGDATABASE}?sslmode=require`;
+  }
+
+  console.log('Database connection URL configured:', DATABASE_URL.replace(/:[^@]+@/, ':****@'));
 
   return {
     connectionString: DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: { rejectUnauthorized: false }, // Always use SSL for Neon
     max: 1, // Limit connections for serverless
     idleTimeoutMillis: 10000, // Reduced for Neon
     connectionTimeoutMillis: 5000, // Increased for Neon
