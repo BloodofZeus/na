@@ -10,7 +10,7 @@ import { CartProvider } from './services/CartContext';
 import { ToastProvider } from './components/ToastContainer';
 import { NotificationProvider } from './services/NotificationContext';
 import { PWAProvider } from './services/PWAContext';
-import './styles/App.css';
+import './App.css';
 
 function AppContent() {
   const { user, isLoading } = useAuth();
