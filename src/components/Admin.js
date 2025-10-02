@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getStaff, addStaff, updateStaff, deleteStaff, resetStaffPassword, getMenu, addMenuItem, updateMenuStock, getOrders } from '../services/api';
+import { getStaff, addStaff, updateStaff, deleteStaff, resetStaffPassword, getMenu, addMenuItem, updateMenuStock, updateMenuItem, deleteMenuItem, duplicateMenuItem, toggleMenuItemAvailability, getOrders } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import StaffDetailsModal from './StaffDetailsModal';
+import MenuDetailsModal from './MenuDetailsModal';
 
 const Admin = () => {
   const { user } = useAuth();
@@ -17,6 +18,8 @@ const Admin = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [showStaffDetailsModal, setShowStaffDetailsModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
+  const [showMenuDetailsModal, setShowMenuDetailsModal] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
 
   // Get active section from URL query parameters
   const getActiveSection = () => {
@@ -154,6 +157,89 @@ const Admin = () => {
 
   const handleStaffDelete = async () => {
     await loadAllData();
+  };
+
+  const handleDeleteStaff = async (username) => {
+    if (window.confirm(`Are you sure you want to delete staff member "${username}"?`)) {
+      try {
+        await deleteStaff(username);
+        await loadAllData();
+        setSuccessMessage('Staff member deleted successfully!');
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } catch (error) {
+        console.error('Error deleting staff:', error);
+        setError('Failed to delete staff member');
+      }
+    }
+  };
+
+  const handleResetStaffPassword = async (username) => {
+    const newPassword = prompt(`Enter new password for ${username}:`);
+    if (newPassword) {
+      try {
+        await resetStaffPassword(username, newPassword);
+        setSuccessMessage(`Password reset successfully for ${username}!`);
+        setTimeout(() => setSuccessMessage(''), 3000);
+      } catch (error) {
+        console.error('Error resetting password:', error);
+        setError('Failed to reset password');
+      }
+    }
+  };
+
+  const handleViewMenuDetails = (menuItem) => {
+    setSelectedMenuItem(menuItem);
+    setShowMenuDetailsModal(true);
+  };
+
+  const handleUpdateMenuItem = async (itemId, itemData) => {
+    try {
+      await updateMenuItem(itemId, itemData);
+      await loadAllData();
+      setSuccessMessage('Menu item updated successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error updating menu item:', error);
+      setError('Failed to update menu item');
+      throw error;
+    }
+  };
+
+  const handleDeleteMenuItem = async (itemId) => {
+    try {
+      await deleteMenuItem(itemId);
+      await loadAllData();
+      setSuccessMessage('Menu item deleted successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error deleting menu item:', error);
+      setError('Failed to delete menu item');
+      throw error;
+    }
+  };
+
+  const handleDuplicateMenuItem = async (itemId) => {
+    try {
+      await duplicateMenuItem(itemId);
+      await loadAllData();
+      setSuccessMessage('Menu item duplicated successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error duplicating menu item:', error);
+      setError('Failed to duplicate menu item');
+    }
+  };
+
+  const handleToggleAvailability = async (itemId, isAvailable) => {
+    try {
+      await toggleMenuItemAvailability(itemId, !isAvailable);
+      await loadAllData();
+      setSuccessMessage(`Item marked as ${!isAvailable ? 'available' : 'unavailable'}!`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error toggling availability:', error);
+      setError('Failed to toggle availability');
+    }
   };
 
   const exportData = () => {
@@ -395,14 +481,14 @@ const Admin = () => {
                     </button>
                     <button 
                       className="btn btn-sm btn-outline-warning me-1"
-                      onClick={() => handleViewStaffDetails(member)}
+                      onClick={() => handleResetStaffPassword(member.username)}
                       title="Reset Password"
                     >
                       <i className="fas fa-key"></i>
                     </button>
                     <button 
                       className="btn btn-sm btn-outline-danger"
-                      onClick={() => handleViewStaffDetails(member)}
+                      onClick={() => handleDeleteStaff(member.username)}
                       title="Delete Staff"
                     >
                       <i className="fas fa-trash"></i>
@@ -479,6 +565,7 @@ const Admin = () => {
                 <thead className="table-light">
                   <tr>
                     <th>Item Name</th>
+                    <th>Category</th>
                     <th>Price</th>
                     <th>Stock</th>
                     <th>Status</th>
@@ -487,8 +574,14 @@ const Admin = () => {
                 </thead>
                 <tbody>
                   {menu.map((item) => (
-                    <tr key={item.id}>
-                      <td className="fw-medium">{item.name}</td>
+                    <tr key={item.id} className={!item.is_available ? 'table-secondary' : ''}>
+                      <td className="fw-medium">
+                        {item.name}
+                        {!item.is_available && <span className="ms-2 badge bg-secondary">Unavailable</span>}
+                      </td>
+                      <td>
+                        <span className="badge bg-info">{item.category || 'General'}</span>
+                      </td>
                       <td>GHS {parseFloat(item.price || 0).toFixed(2)}</td>
                       <td>
                         <div className="d-flex align-items-center gap-2">
@@ -504,8 +597,9 @@ const Admin = () => {
                             <button
                               onClick={() => handleUpdateStock(item.id, stockUpdates[item.id])}
                               className="btn btn-sm btn-primary"
+                              title="Update Stock"
                             >
-                              Update
+                              <i className="fas fa-check"></i>
                             </button>
                           )}
                         </div>
@@ -516,9 +610,40 @@ const Admin = () => {
                         </span>
                       </td>
                       <td>
-                        <button className="btn btn-sm btn-outline-primary me-2">
-                          <i className="fas fa-edit"></i>
-                        </button>
+                        <div className="btn-group" role="group">
+                          <button 
+                            className="btn btn-sm btn-outline-info"
+                            onClick={() => handleViewMenuDetails(item)}
+                            title="View/Edit Details"
+                          >
+                            <i className="fas fa-eye"></i>
+                          </button>
+                          <button 
+                            className={`btn btn-sm ${item.is_available ? 'btn-outline-warning' : 'btn-outline-success'}`}
+                            onClick={() => handleToggleAvailability(item.id, item.is_available)}
+                            title={item.is_available ? 'Mark Unavailable' : 'Mark Available'}
+                          >
+                            <i className={`fas ${item.is_available ? 'fa-ban' : 'fa-check-circle'}`}></i>
+                          </button>
+                          <button 
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => handleDuplicateMenuItem(item.id)}
+                            title="Duplicate Item"
+                          >
+                            <i className="fas fa-copy"></i>
+                          </button>
+                          <button 
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
+                                handleDeleteMenuItem(item.id);
+                              }
+                            }}
+                            title="Delete Item"
+                          >
+                            <i className="fas fa-trash"></i>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -744,6 +869,19 @@ const Admin = () => {
           }}
           onUpdate={handleStaffUpdate}
           onDelete={handleStaffDelete}
+        />
+      )}
+
+      {/* Menu Details Modal */}
+      {showMenuDetailsModal && selectedMenuItem && (
+        <MenuDetailsModal
+          menuItem={selectedMenuItem}
+          onClose={() => {
+            setShowMenuDetailsModal(false);
+            setSelectedMenuItem(null);
+          }}
+          onUpdate={handleUpdateMenuItem}
+          onDelete={handleDeleteMenuItem}
         />
       )}
     </div>

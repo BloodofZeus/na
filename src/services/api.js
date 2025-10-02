@@ -46,6 +46,42 @@ export const updateMenuStock = async (itemId, stock) => {
   }
 };
 
+export const updateMenuItem = async (itemId, itemData) => {
+  try {
+    const response = await api.patch('/menu', { id: itemId, ...itemData });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to update menu item' };
+  }
+};
+
+export const deleteMenuItem = async (itemId) => {
+  try {
+    const response = await api.delete('/menu', { data: { id: itemId } });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to delete menu item' };
+  }
+};
+
+export const duplicateMenuItem = async (itemId) => {
+  try {
+    const response = await api.post('/menu', { duplicateFrom: itemId });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to duplicate menu item' };
+  }
+};
+
+export const toggleMenuItemAvailability = async (itemId, isAvailable) => {
+  try {
+    const response = await api.patch('/menu', { id: itemId, is_available: isAvailable });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to toggle availability' };
+  }
+};
+
 // Staff API
 export const getStaff = async () => {
   try {

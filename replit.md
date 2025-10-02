@@ -75,3 +75,31 @@ Preferred communication style: Simple, everyday language.
 - **Static file serving** for single-server deployment
 - **Port configuration** with fallback to port 5000
 - **Database URL parsing** for various hosting providers (Railway, Render, Fly.io)
+
+# Recent Enhancements (October 2025)
+
+## Enhanced Admin Panel Features
+
+### Staff Management
+- **View/Edit Staff Details** - Modal interface for viewing and editing staff information
+- **Reset Password** - Direct password reset functionality for staff members
+- **Delete Staff** - Remove staff members with confirmation dialog
+- **Assign Roles** - Ability to change staff roles (admin/staff) via StaffDetailsModal
+- **Activate/Deactivate** - Toggle staff member active status
+
+### Menu Items Management
+- **View/Edit Details** - Comprehensive modal (MenuDetailsModal) for viewing and editing menu items
+- **Update Price** - Direct price modification for menu items
+- **Change Category** - Categorize items (General, Shawarma, Wraps, Sides, Drinks, Desserts)
+- **Toggle Availability** - Mark items as available/unavailable (out of stock) independently of inventory
+- **Duplicate Item** - Quick duplication of menu items with "(Copy)" suffix
+- **Delete Item** - Remove menu items with confirmation dialog
+- **Category Display** - Visual category badges in menu table
+- **Stock Management** - In-line stock quantity updates with immediate database sync
+
+### Backend API Enhancements
+- **PATCH /api/menu** - Update menu item details (name, price, category, availability)
+- **DELETE /api/menu** - Remove menu items from database
+- **POST /api/menu** (duplicate) - Clone existing menu items
+- **Enhanced GET /api/menu** - Returns category and availability status
+- **Full CRUD operations** - Complete Create, Read, Update, Delete for both staff and menu items
