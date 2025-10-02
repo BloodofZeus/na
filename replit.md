@@ -100,14 +100,25 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Changes
 
-## GitHub Import Setup (October 2, 2025)
-- Successfully imported Shawarma Boss POS from GitHub to Replit
+## Fresh GitHub Import and Complete Setup (October 2, 2025)
+- Successfully imported Shawarma Boss POS from GitHub to Replit as a fresh clone
+- Installed all npm dependencies (667 packages including webpack, React, Express, PostgreSQL drivers)
 - Created and configured PostgreSQL database with Replit's managed database service
-- Initialized database with default users (admin/admin123, staff1/staff123) and menu items
-- Configured Full Stack Server workflow to run both frontend (port 5000) and backend (port 3001)
-- Set up deployment configuration for production (autoscale with build and run commands)
-- Verified all API endpoints are working correctly
-- Frontend is properly configured with allowedHosts: 'all' for Replit's proxy environment
+- Initialized database with default users (admin/admin123, staff1/staff123) and 3 default menu items
+- Configured Full Stack Server workflow using `npm run dev:full` command:
+  - Frontend: Webpack dev server on port 5000 (0.0.0.0) with allowedHosts: 'all'
+  - Backend: Express.js API server on port 3001 (localhost)
+  - Uses concurrently to run both servers simultaneously
+- Set up deployment configuration for production:
+  - Build: `npm run build` (creates optimized bundle in /dist)
+  - Run: `node server.js` (serves static files and API on port 5000)
+  - Target: Autoscale (stateless application)
+- Verified all API endpoints working correctly:
+  - `/api/health` - Server health check
+  - `/api/menu` - Menu items retrieval
+  - `/api/init-db` - Database initialization
+- Frontend loads correctly with login page displaying Shawarma Boss branding
+- PWA features active: Service Worker registered, IndexedDB initialized
 
 ## Bug Fixes (October 2, 2025)
 - **Staff Deletion Foreign Key Fix**: Fixed staff deletion error by nullifying orders.staff field before deleting users. This prevents foreign key constraint violations when deleting staff members who have associated orders.

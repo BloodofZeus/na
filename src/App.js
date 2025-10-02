@@ -4,20 +4,21 @@ import Header from './components/Header';
 import Login from './components/Login';
 import POS from './components/POS';
 import Admin from './components/Admin';
+import LoadingSpinner from './components/LoadingSpinner';
 import { AuthProvider, useAuth } from './services/AuthContext';
 import { CartProvider } from './services/CartContext';
 import { ToastProvider } from './components/ToastContainer';
 import { NotificationProvider } from './services/NotificationContext';
 import { PWAProvider } from './services/PWAContext';
-import './App.css';
+import './styles/App.css';
 
 function AppContent() {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen fade-in">
+        <LoadingSpinner size="large" centered message="Loading Shawarma Boss POS..." />
       </div>
     );
   }
@@ -25,7 +26,7 @@ function AppContent() {
   return (
     <div className="App">
       <Header />
-      <main className="container py-4">
+      <main className="container py-4 page-transition-wrapper">
         {!user ? (
           <Login />
         ) : (

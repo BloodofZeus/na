@@ -37,12 +37,12 @@ const MenuGrid = ({ menu }) => {
 
   return (
     <div className="pos-menu-grid">
-      {availableMenu.map((item) => {
+      {availableMenu.map((item, index) => {
         const stockStatus = getStockStatus(item.stock);
         const quantity = quantities[item.id] || 1;
         
         return (
-          <div key={item.id} className="menu-item-card">
+          <div key={item.id} className="menu-item-card stagger-item hover-lift transition-all">
             <div className="menu-item-header">
               <h5 className="menu-item-name">{item.name}</h5>
               <span className="menu-item-price">
@@ -88,7 +88,7 @@ const MenuGrid = ({ menu }) => {
               <button
                 onClick={() => handleAddToCart(item)}
                 disabled={item.stock === 0}
-                className={`btn add-to-cart-btn ${
+                className={`btn add-to-cart-btn transition-all ${
                   item.stock === 0 ? 'btn-secondary' : 'btn-danger'
                 }`}
               >

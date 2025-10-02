@@ -1,6 +1,6 @@
 import React from 'react';
 import { usePWA } from '../services/PWAContext';
-import '../PWAStatus.css';
+import '../styles/PWAStatus.css';
 
 const PWAStatus = () => {
   const { 

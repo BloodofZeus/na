@@ -9,6 +9,8 @@ import MenuGrid from './MenuGrid';
 import Cart from './Cart';
 import OrderModal from './OrderModal';
 import OrderDetailsModal from './OrderDetailsModal';
+import LoadingSpinner from './LoadingSpinner';
+import SkeletonLoader from './SkeletonLoader';
 
 const POS = () => {
   const location = useLocation();
@@ -486,22 +488,22 @@ const POS = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="spinner"></div>
-        <span className="ml-2">Loading menu...</span>
+      <div className="flex items-center justify-center py-8 fade-in">
+        <LoadingSpinner size="large" centered message="Loading menu..." />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="card">
+      <div className="card fade-in">
         <div className="card-body text-center">
           <div className="text-danger mb-4">{error}</div>
           <button 
             onClick={loadMenu}
-            className="btn btn-danger"
+            className="btn btn-danger transition-all hover-lift"
           >
+            <i className="fas fa-sync me-2"></i>
             Retry
           </button>
         </div>

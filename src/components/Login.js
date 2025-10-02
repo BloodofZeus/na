@@ -43,8 +43,8 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-96">
-      <div className="card w-full max-w-md slide-up">
+    <div className="flex items-center justify-center min-h-96 fade-in">
+      <div className="card w-full max-w-md slide-in">
         <div className="card-body p-6">
           <div className="text-center mb-6">
             <img 
