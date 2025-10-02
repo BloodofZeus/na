@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getStaff, addStaff, updateStaff, deleteStaff, resetStaffPassword, getMenu, addMenuItem, updateMenuStock, updateMenuItem, deleteMenuItem, duplicateMenuItem, toggleMenuItemAvailability, getOrders } from '../services/api';
+import { getStaff, addStaff, getMenu, addMenuItem, updateMenuItem, deleteMenuItem, getOrders } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import StaffDetailsModal from './StaffDetailsModal';
 import MenuDetailsModal from './MenuDetailsModal';
@@ -40,7 +40,6 @@ const Admin = () => {
   // Form states
   const [newStaff, setNewStaff] = useState({ username: '', password: '', role: 'staff' });
   const [newMenuItem, setNewMenuItem] = useState({ name: '', price: '', stock: '' });
-  const [stockUpdates, setStockUpdates] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
@@ -126,25 +125,6 @@ const Admin = () => {
     }
   };
 
-  const handleUpdateStock = async (itemId, newStock) => {
-    try {
-      await updateMenuStock(itemId, parseInt(newStock));
-      await loadAllData();
-      setStockUpdates({});
-      setSuccessMessage('Stock updated successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error) {
-      console.error('Error updating stock:', error);
-      setError('Failed to update stock');
-    }
-  };
-
-  const handleStockChange = (itemId, value) => {
-    setStockUpdates(prev => ({
-      ...prev,
-      [itemId]: value
-    }));
-  };
 
   const handleViewStaffDetails = (staffMember) => {
     setSelectedStaff(staffMember);
@@ -159,37 +139,14 @@ const Admin = () => {
     await loadAllData();
   };
 
-  const handleDeleteStaff = async (username) => {
-    if (window.confirm(`Are you sure you want to delete staff member "${username}"?`)) {
-      try {
-        await deleteStaff(username);
-        await loadAllData();
-        setSuccessMessage('Staff member deleted successfully!');
-        setTimeout(() => setSuccessMessage(''), 3000);
-      } catch (error) {
-        console.error('Error deleting staff:', error);
-        setError('Failed to delete staff member');
-      }
-    }
-  };
-
-  const handleResetStaffPassword = async (username) => {
-    const newPassword = prompt(`Enter new password for ${username}:`);
-    if (newPassword) {
-      try {
-        await resetStaffPassword(username, newPassword);
-        setSuccessMessage(`Password reset successfully for ${username}!`);
-        setTimeout(() => setSuccessMessage(''), 3000);
-      } catch (error) {
-        console.error('Error resetting password:', error);
-        setError('Failed to reset password');
-      }
-    }
-  };
 
   const handleViewMenuDetails = (menuItem) => {
     setSelectedMenuItem(menuItem);
     setShowMenuDetailsModal(true);
+  };
+
+  const handleMenuRefresh = async () => {
+    await loadAllData();
   };
 
   const handleUpdateMenuItem = async (itemId, itemData) => {
@@ -218,29 +175,6 @@ const Admin = () => {
     }
   };
 
-  const handleDuplicateMenuItem = async (itemId) => {
-    try {
-      await duplicateMenuItem(itemId);
-      await loadAllData();
-      setSuccessMessage('Menu item duplicated successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error) {
-      console.error('Error duplicating menu item:', error);
-      setError('Failed to duplicate menu item');
-    }
-  };
-
-  const handleToggleAvailability = async (itemId, isAvailable) => {
-    try {
-      await toggleMenuItemAvailability(itemId, !isAvailable);
-      await loadAllData();
-      setSuccessMessage(`Item marked as ${!isAvailable ? 'available' : 'unavailable'}!`);
-      setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (error) {
-      console.error('Error toggling availability:', error);
-      setError('Failed to toggle availability');
-    }
-  };
 
   const exportData = () => {
     const data = {
@@ -466,32 +400,12 @@ const Admin = () => {
                   </div>
                   <div className="staff-card-actions">
                     <button 
-                      className="btn btn-sm btn-outline-info me-1"
+                      className="btn btn-primary w-100"
                       onClick={() => handleViewStaffDetails(member)}
-                      title="View Details"
+                      title="View/Edit Details"
                     >
-                      <i className="fas fa-eye"></i>
-                    </button>
-                    <button 
-                      className="btn btn-sm btn-outline-primary me-1"
-                      onClick={() => handleViewStaffDetails(member)}
-                      title="Edit Staff"
-                    >
-                      <i className="fas fa-edit"></i>
-                    </button>
-                    <button 
-                      className="btn btn-sm btn-outline-warning me-1"
-                      onClick={() => handleResetStaffPassword(member.username)}
-                      title="Reset Password"
-                    >
-                      <i className="fas fa-key"></i>
-                    </button>
-                    <button 
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => handleDeleteStaff(member.username)}
-                      title="Delete Staff"
-                    >
-                      <i className="fas fa-trash"></i>
+                      <i className="fas fa-user-edit me-2"></i>
+                      Manage Staff
                     </button>
                   </div>
                 </div>
@@ -584,25 +498,7 @@ const Admin = () => {
                       </td>
                       <td>GHS {parseFloat(item.price || 0).toFixed(2)}</td>
                       <td>
-                        <div className="d-flex align-items-center gap-2">
-                          <input
-                            type="number"
-                            min="0"
-                            value={stockUpdates[item.id] !== undefined ? stockUpdates[item.id] : item.stock}
-                            onChange={(e) => handleStockChange(item.id, e.target.value)}
-                            className="form-control form-control-sm"
-                            style={{ width: '80px' }}
-                          />
-                          {stockUpdates[item.id] !== undefined && stockUpdates[item.id] != item.stock && (
-                            <button
-                              onClick={() => handleUpdateStock(item.id, stockUpdates[item.id])}
-                              className="btn btn-sm btn-primary"
-                              title="Update Stock"
-                            >
-                              <i className="fas fa-check"></i>
-                            </button>
-                          )}
-                        </div>
+                        <span className="fw-bold">{item.stock}</span>
                       </td>
                       <td>
                         <span className={`badge ${item.stock <= 0 ? 'bg-danger' : item.stock <= 5 ? 'bg-warning' : 'bg-success'}`}>
@@ -610,40 +506,14 @@ const Admin = () => {
                         </span>
                       </td>
                       <td>
-                        <div className="btn-group" role="group">
-                          <button 
-                            className="btn btn-sm btn-outline-info"
-                            onClick={() => handleViewMenuDetails(item)}
-                            title="View/Edit Details"
-                          >
-                            <i className="fas fa-eye"></i>
-                          </button>
-                          <button 
-                            className={`btn btn-sm ${item.is_available ? 'btn-outline-warning' : 'btn-outline-success'}`}
-                            onClick={() => handleToggleAvailability(item.id, item.is_available)}
-                            title={item.is_available ? 'Mark Unavailable' : 'Mark Available'}
-                          >
-                            <i className={`fas ${item.is_available ? 'fa-ban' : 'fa-check-circle'}`}></i>
-                          </button>
-                          <button 
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={() => handleDuplicateMenuItem(item.id)}
-                            title="Duplicate Item"
-                          >
-                            <i className="fas fa-copy"></i>
-                          </button>
-                          <button 
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => {
-                              if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
-                                handleDeleteMenuItem(item.id);
-                              }
-                            }}
-                            title="Delete Item"
-                          >
-                            <i className="fas fa-trash"></i>
-                          </button>
-                        </div>
+                        <button 
+                          className="btn btn-sm btn-primary"
+                          onClick={() => handleViewMenuDetails(item)}
+                          title="Manage Item"
+                        >
+                          <i className="fas fa-cog me-1"></i>
+                          Manage
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -882,6 +752,7 @@ const Admin = () => {
           }}
           onUpdate={handleUpdateMenuItem}
           onDelete={handleDeleteMenuItem}
+          onRefresh={handleMenuRefresh}
         />
       )}
     </div>

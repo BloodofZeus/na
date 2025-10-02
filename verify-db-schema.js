@@ -59,3 +59,4 @@ async function verifyDatabaseSchema() {
 
 // Run the verification
 verifyDatabaseSchema();
+

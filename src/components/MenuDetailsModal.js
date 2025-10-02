@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { updateMenuStock, toggleMenuItemAvailability, duplicateMenuItem } from '../services/api';
 
-const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete }) => {
+const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete, onRefresh }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isUpdatingStock, setIsUpdatingStock] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
     category: '',
-    is_available: true
+    is_available: true,
+    stock: 0
   });
+  const [stockValue, setStockValue] = useState(0);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (menuItem) {
@@ -15,30 +21,83 @@ const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete }) => {
         name: menuItem.name || '',
         price: menuItem.price || '',
         category: menuItem.category || 'General',
-        is_available: menuItem.is_available !== false
+        is_available: menuItem.is_available !== false,
+        stock: menuItem.stock || 0
       });
+      setStockValue(menuItem.stock || 0);
     }
   }, [menuItem]);
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(''), 3000);
+  };
+
+  const showError = (message) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(''), 3000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await onUpdate(menuItem.id, formData);
       setIsEditing(false);
+      showSuccess('Menu item updated successfully!');
     } catch (error) {
       console.error('Error updating menu item:', error);
-      alert('Failed to update menu item');
+      showError('Failed to update menu item');
+    }
+  };
+
+  const handleStockUpdate = async () => {
+    try {
+      setIsUpdatingStock(true);
+      await updateMenuStock(menuItem.id, stockValue);
+      setIsUpdatingStock(false);
+      showSuccess('Stock updated successfully!');
+      if (onRefresh) await onRefresh();
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      setIsUpdatingStock(false);
+      showError('Failed to update stock');
+    }
+  };
+
+  const handleToggleAvailability = async () => {
+    try {
+      await toggleMenuItemAvailability(menuItem.id, !menuItem.is_available);
+      showSuccess(`Item marked as ${!menuItem.is_available ? 'available' : 'unavailable'}!`);
+      if (onRefresh) await onRefresh();
+    } catch (error) {
+      console.error('Error toggling availability:', error);
+      showError('Failed to toggle availability');
+    }
+  };
+
+  const handleDuplicate = async () => {
+    try {
+      await duplicateMenuItem(menuItem.id);
+      showSuccess('Menu item duplicated successfully!');
+      if (onRefresh) await onRefresh();
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (error) {
+      console.error('Error duplicating menu item:', error);
+      showError('Failed to duplicate menu item');
     }
   };
 
   const handleDelete = async () => {
-    if (window.confirm(`Are you sure you want to delete "${menuItem.name}"?`)) {
+    if (window.confirm(`Are you sure you want to delete "${menuItem.name}"? This action cannot be undone.`)) {
       try {
         await onDelete(menuItem.id);
-        onClose();
+        showSuccess('Menu item deleted successfully!');
+        setTimeout(() => onClose(), 1000);
       } catch (error) {
         console.error('Error deleting menu item:', error);
-        alert('Failed to delete menu item');
+        showError('Failed to delete menu item');
       }
     }
   };
@@ -59,6 +118,19 @@ const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete }) => {
         </div>
 
         <div className="modal-body">
+          {successMessage && (
+            <div className="alert alert-success alert-dismissible fade show" role="alert">
+              <i className="fas fa-check-circle me-2"></i>
+              {successMessage}
+            </div>
+          )}
+          {errorMessage && (
+            <div className="alert alert-danger alert-dismissible fade show" role="alert">
+              <i className="fas fa-exclamation-circle me-2"></i>
+              {errorMessage}
+            </div>
+          )}
+
           {!isEditing ? (
             <div className="menu-details">
               <div className="detail-row">
@@ -68,14 +140,6 @@ const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete }) => {
               <div className="detail-row">
                 <label className="detail-label">Price:</label>
                 <div className="detail-value">GHS {parseFloat(menuItem.price || 0).toFixed(2)}</div>
-              </div>
-              <div className="detail-row">
-                <label className="detail-label">Current Stock:</label>
-                <div className="detail-value">
-                  <span className={`badge ${menuItem.stock <= 0 ? 'bg-danger' : menuItem.stock <= 5 ? 'bg-warning' : 'bg-success'}`}>
-                    {menuItem.stock} units
-                  </span>
-                </div>
               </div>
               <div className="detail-row">
                 <label className="detail-label">Category:</label>
@@ -90,8 +154,58 @@ const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete }) => {
                 </div>
               </div>
               <div className="detail-row">
+                <label className="detail-label">Current Stock:</label>
+                <div className="detail-value">
+                  <div className="d-flex align-items-center gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      value={stockValue}
+                      onChange={(e) => setStockValue(parseInt(e.target.value) || 0)}
+                      className="form-control form-control-sm"
+                      style={{ width: '100px' }}
+                    />
+                    {stockValue !== menuItem.stock && (
+                      <button
+                        onClick={handleStockUpdate}
+                        className="btn btn-sm btn-success"
+                        disabled={isUpdatingStock}
+                      >
+                        <i className="fas fa-check me-1"></i>
+                        {isUpdatingStock ? 'Updating...' : 'Update'}
+                      </button>
+                    )}
+                    <span className={`badge ${menuItem.stock <= 0 ? 'bg-danger' : menuItem.stock <= 5 ? 'bg-warning' : 'bg-success'}`}>
+                      {menuItem.stock <= 0 ? 'Out of Stock' : menuItem.stock <= 5 ? 'Low Stock' : 'In Stock'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="detail-row">
                 <label className="detail-label">Item ID:</label>
                 <div className="detail-value text-muted">{menuItem.id}</div>
+              </div>
+
+              <hr className="my-4" />
+              
+              <div className="quick-actions">
+                <h6 className="mb-3 fw-bold">Quick Actions</h6>
+                <div className="d-grid gap-2">
+                  <button 
+                    className={`btn ${menuItem.is_available ? 'btn-warning' : 'btn-success'}`}
+                    onClick={handleToggleAvailability}
+                  >
+                    <i className={`fas ${menuItem.is_available ? 'fa-ban' : 'fa-check-circle'} me-2`}></i>
+                    {menuItem.is_available ? 'Mark as Unavailable' : 'Mark as Available'}
+                  </button>
+                  <button 
+                    className="btn btn-info"
+                    onClick={handleDuplicate}
+                  >
+                    <i className="fas fa-copy me-2"></i>
+                    Duplicate This Item
+                  </button>
+                </div>
               </div>
             </div>
           ) : (

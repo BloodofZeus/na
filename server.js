@@ -27,6 +27,8 @@ app.post('/api/login', (req, res) => loginHandler(req, res));
 app.get('/api/menu', (req, res) => menuHandler(req, res));
 app.post('/api/menu', (req, res) => menuHandler(req, res));
 app.put('/api/menu', (req, res) => menuHandler(req, res));
+app.patch('/api/menu', (req, res) => menuHandler(req, res));
+app.delete('/api/menu', (req, res) => menuHandler(req, res));
 
 // Stock route - handle within menu handler
 app.put('/api/menu/:id/stock', (req, res) => {
@@ -43,6 +45,9 @@ app.post('/api/orders', (req, res) => ordersHandler(req, res));
 // Staff routes
 app.get('/api/staff', (req, res) => staffHandler(req, res));
 app.post('/api/staff', (req, res) => staffHandler(req, res));
+app.put('/api/staff', (req, res) => staffHandler(req, res));
+app.patch('/api/staff', (req, res) => staffHandler(req, res));
+app.delete('/api/staff', (req, res) => staffHandler(req, res));
 
 // Database initialization route
 app.post('/api/init-db', (req, res) => initDbHandler(req, res));
@@ -71,9 +76,9 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 API Server running on http://0.0.0.0:${PORT}`);
-  console.log(`📊 Health check available at http://0.0.0.0:${PORT}/api/health`);
+app.listen(PORT, 'localhost', () => {
+  console.log(`🚀 API Server running on http://localhost:${PORT}`);
+  console.log(`📊 Health check available at http://localhost:${PORT}/api/health`);
 });
 
 module.exports = app;
