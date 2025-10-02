@@ -33,10 +33,10 @@
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "pg": "^8.16.3",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "react-refresh": "^0.17.0",
-    "react-router-dom": "^7.9.1"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-refresh": "^0.14.0",
+    "react-router-dom": "^6.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.28.4",
