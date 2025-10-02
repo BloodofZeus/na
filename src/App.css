@@ -3369,6 +3369,12 @@
   padding: 1rem;
   backdrop-filter: blur(4px);
   animation: modalFadeIn 0.3s ease-out;
+  overflow-y: auto;
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
 }
 
 .modal-content {
@@ -3381,6 +3387,15 @@
   overflow: hidden;
   animation: modalSlideIn 0.3s ease-out;
   position: relative;
+}
+
+.menu-details-modal {
+  max-width: 650px;
+  width: 95%;
+}
+
+.menu-details-modal .modal-body {
+  max-height: 70vh;
 }
 
 .modal-header {

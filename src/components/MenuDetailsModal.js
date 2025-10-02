@@ -28,6 +28,14 @@ const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete, onRefresh }) 
     }
   }, [menuItem]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.classList.add('modal-open');
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -96,7 +104,7 @@ const MenuDetailsModal = ({ menuItem, onClose, onUpdate, onDelete, onRefresh }) 
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content menu-details-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3 className="modal-title">
             <i className="fas fa-utensils me-2"></i>
