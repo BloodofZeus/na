@@ -4,7 +4,7 @@ import { useAuth } from '../services/AuthContext';
 import { useCart } from '../services/CartContext';
 import { useNotifications } from '../services/NotificationContext';
 import { usePWA } from '../services/PWAContext';
-import { getMenu, createOrder, updateMenuStock } from '../services/api';
+import { getMenu, createOrder, updateMenuStock, getOrders } from '../services/api';
 import MenuGrid from './MenuGrid';
 import Cart from './Cart';
 import OrderModal from './OrderModal';
@@ -34,15 +34,57 @@ const POS = () => {
     loadRecentOrders();
   }, [location.pathname]);
 
-  // Also refresh menu when window gains focus (e.g., different browser tabs)
+  // Refresh data when coming back online
+  useEffect(() => {
+    if (isOnline) {
+      loadRecentOrders();
+    }
+  }, [isOnline]);
+
+  // Listen for sync completion to refresh recent orders
+  useEffect(() => {
+    const handleSyncComplete = (data) => {
+      if (data.type === 'SYNC_COMPLETE' && data.synced > 0) {
+        // Refresh recent orders when sync completes
+        loadRecentOrders();
+      }
+    };
+
+    syncManager.subscribe(handleSyncComplete);
+    
+    return () => {
+      // Note: syncManager doesn't have unsubscribe method, but this is fine for cleanup
+    };
+  }, []);
+
+  // Listen for POS data reset events from admin
+  useEffect(() => {
+    const handlePosDataReset = (event) => {
+      if (event.detail?.type === 'orders_cleared') {
+        // Clear recent orders and reload from API
+        setRecentOrders([]);
+        loadRecentOrders();
+      }
+    };
+
+    window.addEventListener('posDataReset', handlePosDataReset);
+    
+    return () => {
+      window.removeEventListener('posDataReset', handlePosDataReset);
+    };
+  }, []);
+
+  // Also refresh menu and recent orders when window gains focus (e.g., different browser tabs)
   useEffect(() => {
     const handleFocus = () => {
       loadMenu();
+      loadRecentOrders();
     };
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         loadMenu();
+        loadRecentOrders();
       }
     };
 
@@ -92,13 +134,46 @@ const POS = () => {
     }
   };
 
-  const loadRecentOrders = () => {
-    const stored = localStorage.getItem('shawarma_boss_recent_orders');
-    if (stored) {
-      try {
-        setRecentOrders(JSON.parse(stored));
-      } catch (error) {
-        console.error('Error loading recent orders:', error);
+  const loadRecentOrders = async () => {
+    try {
+      if (isOnline) {
+        // Fetch real orders from API
+        const ordersData = await getOrders();
+        // Get the 5 most recent orders
+        const recentOrdersData = ordersData ? ordersData.slice(0, 5) : [];
+        setRecentOrders(recentOrdersData);
+        
+        // Also save to localStorage for offline access
+        localStorage.setItem('shawarma_boss_recent_orders', JSON.stringify(recentOrdersData));
+      } else {
+        // Fallback to localStorage when offline
+        const stored = localStorage.getItem('shawarma_boss_recent_orders');
+        if (stored) {
+          try {
+            const storedOrders = JSON.parse(stored);
+            setRecentOrders(storedOrders || []);
+          } catch (error) {
+            console.error('Error loading recent orders from localStorage:', error);
+            setRecentOrders([]);
+          }
+        } else {
+          setRecentOrders([]);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading recent orders from API:', error);
+      // Fallback to localStorage on error
+      const stored = localStorage.getItem('shawarma_boss_recent_orders');
+      if (stored) {
+        try {
+          const storedOrders = JSON.parse(stored);
+          setRecentOrders(storedOrders || []);
+        } catch (localError) {
+          console.error('Error loading recent orders from localStorage:', localError);
+          setRecentOrders([]);
+        }
+      } else {
+        setRecentOrders([]);
       }
     }
   };
@@ -137,6 +212,7 @@ const POS = () => {
           'high'
         );
 
+        // Add offline order to recent orders list
         const newRecentOrders = [{ ...order, offline: true }, ...recentOrders.slice(0, 4)];
         setRecentOrders(newRecentOrders);
         localStorage.setItem('shawarma_boss_recent_orders', JSON.stringify(newRecentOrders));
@@ -150,6 +226,9 @@ const POS = () => {
       // Save order to backend (online)
       const result = await createOrder(order);
       console.log('Order creation result:', result);
+
+      // Refresh recent orders to show the new order
+      await loadRecentOrders();
 
       // Update stock for each item and check for low stock
       for (const item of cartItems) {
@@ -334,11 +413,21 @@ const POS = () => {
 
   const renderRecentOrdersSection = () => (
     <div className="card">
-      <div className="card-header bg-success text-white">
+      <div className="card-header bg-success text-white d-flex justify-content-between align-items-center">
         <h5 className="mb-0">
           <i className="fas fa-clock me-2"></i>
           Recent Orders
         </h5>
+        <button 
+          className="btn btn-sm btn-light text-success"
+          onClick={() => {
+            setRecentOrders([]);
+            loadRecentOrders();
+          }}
+          title="Refresh orders"
+        >
+          <i className="fas fa-refresh"></i>
+        </button>
       </div>
       <div className="card-body">
         {recentOrders.length === 0 ? (
@@ -379,7 +468,9 @@ const POS = () => {
                       {new Date(order.timestamp).toLocaleString()}
                     </p>
                     <div className="d-flex justify-content-between">
-                      <span className="text-muted">{order.items?.length || 0} items</span>
+                      <span className="text-muted">
+                        {order.items?.length || order.payload?.items?.length || 0} items
+                      </span>
                       <span className="fw-bold text-success">GHS {parseFloat(order.total || 0).toFixed(2)}</span>
                     </div>
                     <div className="mt-3 text-center">
