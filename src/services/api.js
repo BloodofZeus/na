@@ -178,6 +178,16 @@ export const resetAllOrders = async () => {
   }
 };
 
+// POS Reset (Admin only)
+export const resetPOS = async (adminUsername, adminPassword) => {
+  try {
+    const response = await api.post('/reset-pos', { adminUsername, adminPassword });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { error: 'Failed to reset POS system' };
+  }
+};
+
 // Health check
 export const healthCheck = async () => {
   try {

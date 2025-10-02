@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getStaff, addStaff, getMenu, addMenuItem, updateMenuItem, deleteMenuItem, getOrders } from '../services/api';
+import { getStaff, addStaff, getMenu, addMenuItem, updateMenuItem, deleteMenuItem, getOrders, resetPOS } from '../services/api';
 import { useAuth } from '../services/AuthContext';
 import { useToast } from './ToastContainer';
 import { useNotifications } from '../services/NotificationContext';
@@ -271,6 +271,58 @@ const Admin = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleResetPOS = async () => {
+    const confirmed = window.confirm(
+      '⚠️ WARNING: This will permanently delete ALL test data including:\n\n' +
+      '• All orders\n' +
+      '• All staff users (except admins)\n' +
+      '• All menu items (will be reset to defaults)\n\n' +
+      'This action CANNOT be undone!\n\n' +
+      'Are you sure you want to reset the POS system?'
+    );
+
+    if (!confirmed) return;
+
+    const doubleCheck = window.confirm(
+      '🚨 FINAL CONFIRMATION\n\n' +
+      'You are about to reset the entire POS system to factory settings.\n\n' +
+      'Click OK to proceed with the reset.'
+    );
+
+    if (!doubleCheck) return;
+
+    // Prompt for admin password for security
+    const adminPassword = window.prompt(
+      '🔐 SECURITY CHECK\n\n' +
+      'Please enter your admin password to confirm this action:'
+    );
+
+    if (!adminPassword) {
+      showError('Password is required to reset the POS system');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const result = await resetPOS(user.username, adminPassword);
+      await loadAllData();
+      
+      showSuccess(
+        `POS system reset successfully! ` +
+        `Deleted ${result.details.ordersDeleted} orders, ` +
+        `${result.details.staffDeleted} staff members. ` +
+        `Menu reset to ${result.details.menuItemsCreated} default items.`
+      );
+      
+      notifySystem('POS system has been reset to factory settings', 'high');
+    } catch (error) {
+      console.error('Error resetting POS:', error);
+      showError(error.error || 'Failed to reset POS system');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Calculate sales stats
   const salesStats = React.useMemo(() => {
     const today = new Date().toDateString();
@@ -516,6 +568,46 @@ const Admin = () => {
           </div>
         </div>
       </div>
+
+      {/* POS Reset Panel - Admin Only */}
+      {user.role === 'admin' && (
+        <div className="admin-panel bg-light border-danger mt-4">
+          <div className="panel-header bg-danger text-white">
+            <h4 className="panel-title">
+              <i className="fas fa-exclamation-triangle me-2"></i>
+              POS System Reset
+            </h4>
+          </div>
+          <div className="panel-body">
+            <div className="alert alert-warning mb-3">
+              <i className="fas fa-info-circle me-2"></i>
+              <strong>Warning:</strong> This will delete all test data and reset the POS to factory settings.
+            </div>
+            <div className="reset-info mb-3">
+              <h6 className="text-danger mb-2">This action will:</h6>
+              <ul className="reset-list">
+                <li><i className="fas fa-times-circle text-danger me-2"></i>Delete all orders</li>
+                <li><i className="fas fa-times-circle text-danger me-2"></i>Remove all staff users (except admins)</li>
+                <li><i className="fas fa-times-circle text-danger me-2"></i>Reset menu items to defaults</li>
+                <li><i className="fas fa-check-circle text-success me-2"></i>Create default staff account</li>
+                <li><i className="fas fa-check-circle text-success me-2"></i>Create default menu items</li>
+              </ul>
+            </div>
+            <button 
+              className="btn btn-danger w-100"
+              onClick={handleResetPOS}
+              disabled={isLoading}
+            >
+              <i className="fas fa-redo me-2"></i>
+              {isLoading ? 'Resetting...' : 'Reset POS System'}
+            </button>
+            <div className="text-muted small mt-2 text-center">
+              <i className="fas fa-shield-alt me-1"></i>
+              Admin-only action with double confirmation
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 

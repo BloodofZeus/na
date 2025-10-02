@@ -122,6 +122,13 @@ Preferred communication style: Simple, everyday language.
 - **Delete Staff** - Remove staff members with confirmation dialog
 - **Assign Roles** - Ability to change staff roles (admin/staff) via StaffDetailsModal
 - **Activate/Deactivate** - Toggle staff member active status
+- **POS System Reset** - Factory reset feature for admins to clear all test/trial data and start fresh
+  - Deletes all orders
+  - Removes all staff users (except admins)
+  - Resets menu items to defaults
+  - Creates default staff account (staff1/staff123)
+  - Requires admin password verification for security
+  - Triple confirmation (2 warnings + password prompt)
 
 ### Menu Items Management
 - **View/Edit Details** - Comprehensive modal (MenuDetailsModal) for viewing and editing menu items
@@ -138,4 +145,19 @@ Preferred communication style: Simple, everyday language.
 - **DELETE /api/menu** - Remove menu items from database
 - **POST /api/menu** (duplicate) - Clone existing menu items
 - **Enhanced GET /api/menu** - Returns category and availability status
+- **POST /api/reset-pos** - Factory reset endpoint (admin-only, password-verified)
 - **Full CRUD operations** - Complete Create, Read, Update, Delete for both staff and menu items
+
+## POS System Reset Feature (October 2, 2025)
+Added comprehensive factory reset functionality for admins to start with a clean operating state:
+- **Security**: Requires admin username + password verification using bcrypt
+- **Authorization**: Role-checked to ensure only admin users can trigger reset
+- **Transaction Safety**: All operations wrapped in database transaction (BEGIN/COMMIT/ROLLBACK)
+- **User Confirmation**: Triple-layer confirmation (2 warnings + password prompt) to prevent accidental resets
+- **Factory Reset Actions**:
+  - Clears all orders (complete order history deletion)
+  - Removes all staff users except admin accounts
+  - Deletes all menu items and resets to 3 default shawarma items
+  - Creates default staff account (staff1/staff123)
+- **UI Location**: Admin Panel → Staff Management section (visible only to admin role)
+- **Use Case**: Perfect for clearing test data or resetting shop to fresh state

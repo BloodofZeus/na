@@ -17,6 +17,7 @@ const menuHandler = require('./api/menu');
 const ordersHandler = require('./api/orders');
 const staffHandler = require('./api/staff');
 const initDbHandler = require('./api/init-db');
+const resetPosHandler = require('./api/reset-pos');
 // Remove the problematic stock handler import for now
 
 // API Routes - Convert Vercel serverless functions to Express routes
@@ -51,6 +52,9 @@ app.delete('/api/staff', (req, res) => staffHandler(req, res));
 
 // Database initialization route
 app.post('/api/init-db', (req, res) => initDbHandler(req, res));
+
+// POS reset route (admin only)
+app.post('/api/reset-pos', (req, res) => resetPosHandler(req, res));
 
 // CORS is already handled by the cors() middleware above
 
