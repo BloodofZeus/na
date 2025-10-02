@@ -76,6 +76,28 @@ Preferred communication style: Simple, everyday language.
 - **Port configuration** with fallback to port 5000
 - **Database URL parsing** for various hosting providers (Railway, Render, Fly.io)
 
+# Replit Environment Setup (October 2025)
+
+## Development Configuration
+- **Frontend**: Webpack dev server on port 5000 (0.0.0.0) with proxy to backend
+- **Backend**: Express.js server on port 3001 (localhost)
+- **Database**: Replit-managed PostgreSQL database
+- **Workflow**: Single "Full Stack Server" workflow runs both frontend and backend using concurrently
+
+## Environment Variables (Auto-configured by Replit)
+- `DATABASE_URL` - PostgreSQL connection string
+- `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE` - Database credentials
+
+## Database Initialization
+- Run POST request to `/api/init-db` to create tables and seed default data
+- Default users: admin/admin123 (admin role), staff1/staff123 (staff role)
+- Creates tables: users, menu, orders with proper indexes
+
+## Production Deployment
+- Build command: `npm run build` (creates optimized bundle in /dist)
+- Run command: `node server.js` (serves static files and API)
+- Deployment target: Autoscale (stateless application)
+
 # Recent Enhancements (October 2025)
 
 ## Enhanced Admin Panel Features

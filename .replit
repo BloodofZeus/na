@@ -15,10 +15,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Shawarma POS Dev Server"
+args = "Full Stack Server"
 
 [[workflows.workflow]]
-name = "Shawarma POS Dev Server"
+name = "Full Stack Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -47,10 +47,14 @@ localPort = 34953
 externalPort = 3002
 
 [[ports]]
+localPort = 44947
+externalPort = 4200
+
+[[ports]]
 localPort = 46877
 externalPort = 3000
 
 [deployment]
-deploymentTarget = "vm"
-run = ["npm", "run", "server"]
+deploymentTarget = "autoscale"
+run = ["node", "server.js"]
 build = ["npm", "run", "build"]

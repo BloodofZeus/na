@@ -4,6 +4,7 @@ import { updateStaff, deleteStaff, resetStaffPassword } from '../services/api';
 const StaffDetailsModal = ({ staff, onClose, onUpdate, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editData, setEditData] = useState({
     role: staff.role,
@@ -62,18 +63,18 @@ const StaffDetailsModal = ({ staff, onClose, onUpdate, onDelete }) => {
 
     try {
       setError('');
-      setIsResettingPassword(true);
+      setIsSubmittingPassword(true);
       await resetStaffPassword(staff.username, newPassword);
       setSuccess('Password reset successfully!');
       setNewPassword('');
       setConfirmPassword('');
       setTimeout(() => {
-        setIsResettingPassword(false);
+        setIsSubmittingPassword(false);
         setSuccess('');
       }, 2000);
     } catch (error) {
       setError(error.error || 'Failed to reset password');
-      setIsResettingPassword(false);
+      setIsSubmittingPassword(false);
     }
   };
 
@@ -296,10 +297,10 @@ const StaffDetailsModal = ({ staff, onClose, onUpdate, onDelete }) => {
                 <button 
                   onClick={handleResetPassword} 
                   className="btn btn-warning"
-                  disabled={isResettingPassword}
+                  disabled={isSubmittingPassword}
                 >
                   <i className="fas fa-key me-2"></i>
-                  {isResettingPassword ? 'Resetting...' : 'Reset Password'}
+                  {isSubmittingPassword ? 'Resetting...' : 'Reset Password'}
                 </button>
                 <button 
                   onClick={() => {
@@ -316,16 +317,6 @@ const StaffDetailsModal = ({ staff, onClose, onUpdate, onDelete }) => {
               </div>
             </div>
           )}
-        </div>
-        
-        <div className="flex gap-2 p-4 border-t sticky bottom-0 bg-white">
-          <button
-            onClick={onClose}
-            className="btn btn-outline-secondary flex-1"
-          >
-            <i className="fas fa-times me-2"></i>
-            Close
-          </button>
         </div>
       </div>
     </div>
