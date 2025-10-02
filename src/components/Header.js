@@ -11,19 +11,149 @@ const Header = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  // Mock notification system for UI demonstration (ready for real-time integration)
+  // Enhanced notification system with real-time updates
   useEffect(() => {
-    // Demo notifications - can be replaced with WebSocket/SSE for real-time updates
-    const mockNotifications = [
-      { id: 1, type: 'order', message: 'New order #1234 received', time: '2 min ago', read: false },
-      { id: 2, type: 'system', message: 'Daily backup completed', time: '1 hour ago', read: true },
-      { id: 3, type: 'inventory', message: 'Low stock alert: Chicken Shawarma', time: '3 hours ago', read: false },
-    ];
-    setNotifications(mockNotifications);
-    setUnreadCount(mockNotifications.filter(n => !n.read).length);
+    // Generate dynamic notifications with timestamps
+    const generateNotifications = () => {
+      const now = new Date();
+      const notifications = [
+        {
+          id: 1,
+          type: 'order',
+          message: `New order #${Math.floor(Math.random() * 9999) + 1000} received`,
+          time: formatTimeAgo(new Date(now.getTime() - 120000)),
+          read: false,
+          timestamp: now.getTime() - 120000,
+          priority: 'high'
+        },
+        {
+          id: 2,
+          type: 'inventory',
+          message: 'Low stock alert: Chicken Shawarma (3 left)',
+          time: formatTimeAgo(new Date(now.getTime() - 300000)),
+          read: false,
+          timestamp: now.getTime() - 300000,
+          priority: 'high'
+        },
+        {
+          id: 3,
+          type: 'system',
+          message: 'Daily backup completed successfully',
+          time: formatTimeAgo(new Date(now.getTime() - 3600000)),
+          read: true,
+          timestamp: now.getTime() - 3600000,
+          priority: 'low'
+        },
+        {
+          id: 4,
+          type: 'order',
+          message: `Order #${Math.floor(Math.random() * 9999) + 2000} completed`,
+          time: formatTimeAgo(new Date(now.getTime() - 900000)),
+          read: false,
+          timestamp: now.getTime() - 900000,
+          priority: 'medium'
+        },
+        {
+          id: 5,
+          type: 'staff',
+          message: 'New staff member John Doe added to system',
+          time: formatTimeAgo(new Date(now.getTime() - 7200000)),
+          read: true,
+          timestamp: now.getTime() - 7200000,
+          priority: 'medium'
+        },
+        {
+          id: 6,
+          type: 'sales',
+          message: 'Daily sales target achieved! GHS 2,500',
+          time: formatTimeAgo(new Date(now.getTime() - 1800000)),
+          read: false,
+          timestamp: now.getTime() - 1800000,
+          priority: 'medium'
+        }
+      ];
+      
+      // Sort by timestamp (newest first)
+      return notifications.sort((a, b) => b.timestamp - a.timestamp);
+    };
     
-    // TODO: Replace with real-time notification subscription
-    // Example: WebSocket connection, Server-Sent Events, or polling
+    const initialNotifications = generateNotifications();
+    setNotifications(initialNotifications);
+    setUnreadCount(initialNotifications.filter(n => !n.read).length);
+    
+    // Simulate real-time notifications every 45 seconds
+    const interval = setInterval(() => {
+      const notificationTypes = [
+        {
+          type: 'order',
+          messages: [
+            `New order #${Math.floor(Math.random() * 9999) + 1000} received`,
+            `Order #${Math.floor(Math.random() * 9999) + 2000} ready for pickup`,
+            `Payment confirmed for order #${Math.floor(Math.random() * 9999) + 3000}`
+          ],
+          priority: 'high'
+        },
+        {
+          type: 'inventory',
+          messages: [
+            'Low stock alert: Beef Shawarma (2 left)',
+            'Stock updated: Chicken Shawarma (+15 items)',
+            'Inventory check required for Falafel Wrap'
+          ],
+          priority: 'high'
+        },
+        {
+          type: 'system',
+          messages: [
+            'System maintenance completed',
+            'Database backup successful',
+            'Security update installed'
+          ],
+          priority: 'low'
+        },
+        {
+          type: 'sales',
+          messages: [
+            `Sales milestone: GHS ${Math.floor(Math.random() * 1000) + 1500} today`,
+            'Weekly sales report ready',
+            'Best-selling item: Chicken Shawarma'
+          ],
+          priority: 'medium'
+        },
+        {
+          type: 'staff',
+          messages: [
+            'Staff shift change reminder',
+            'Training session scheduled for tomorrow',
+            'Performance review completed'
+          ],
+          priority: 'medium'
+        }
+      ];
+      
+      const randomType = notificationTypes[Math.floor(Math.random() * notificationTypes.length)];
+      const randomMessage = randomType.messages[Math.floor(Math.random() * randomType.messages.length)];
+      
+      const newNotification = {
+        id: Date.now(),
+        type: randomType.type,
+        message: randomMessage,
+        time: 'Just now',
+        read: false,
+        timestamp: Date.now(),
+        priority: randomType.priority
+      };
+      
+      setNotifications(prev => [newNotification, ...prev.slice(0, 14)]); // Keep only 15 notifications
+      setUnreadCount(prev => prev + 1);
+      
+      // Play notification sound for high priority notifications
+      if (randomType.priority === 'high') {
+        playNotificationSound();
+      }
+    }, 45000); // New notification every 45 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   // Close dropdowns when clicking outside
@@ -61,12 +191,76 @@ const Header = () => {
     setUnreadCount(0);
   };
 
+  // Helper function to format time ago
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hour${Math.floor(diffInSeconds / 3600) > 1 ? 's' : ''} ago`;
+    return `${Math.floor(diffInSeconds / 86400)} day${Math.floor(diffInSeconds / 86400) > 1 ? 's' : ''} ago`;
+  };
+  
+  // Play notification sound
+  const playNotificationSound = () => {
+    try {
+      // Create a simple beep sound using Web Audio API
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (error) {
+      console.log('Audio notification not supported:', error);
+    }
+  };
+  
+  // Mark individual notification as read
+  const markAsRead = (notificationId) => {
+    setNotifications(prev => 
+      prev.map(n => 
+        n.id === notificationId ? { ...n, read: true } : n
+      )
+    );
+    setUnreadCount(prev => Math.max(0, prev - 1));
+  };
+  
+  // Clear all notifications
+  const clearAllNotifications = () => {
+    setNotifications([]);
+    setUnreadCount(0);
+  };
+
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'order': return 'fas fa-shopping-cart';
       case 'system': return 'fas fa-cog';
       case 'inventory': return 'fas fa-exclamation-triangle';
+      case 'sales': return 'fas fa-chart-line';
+      case 'staff': return 'fas fa-users';
       default: return 'fas fa-bell';
+    }
+  };
+  
+  const getNotificationColor = (type) => {
+    switch (type) {
+      case 'order': return 'order';
+      case 'system': return 'system';
+      case 'inventory': return 'inventory';
+      case 'sales': return 'sales';
+      case 'staff': return 'staff';
+      default: return 'system';
     }
   };
 
@@ -205,15 +399,32 @@ const Header = () => {
                 {showNotifications && (
                   <div className="notification-dropdown">
                     <div className="notification-header">
-                      <h6>Notifications</h6>
-                      {unreadCount > 0 && (
-                        <button 
-                          className="mark-read-btn"
-                          onClick={markAllAsRead}
-                        >
-                          Mark all as read
-                        </button>
-                      )}
+                      <div className="notification-header-content">
+                        <h6>Notifications</h6>
+                        <span className="notification-count">{notifications.length}</span>
+                      </div>
+                      <div className="notification-actions">
+                        {unreadCount > 0 && (
+                          <button 
+                            className="mark-read-btn"
+                            onClick={markAllAsRead}
+                            title="Mark all as read"
+                          >
+                            <i className="fas fa-check-double me-1"></i>
+                            Mark all read
+                          </button>
+                        )}
+                        {notifications.length > 0 && (
+                          <button 
+                            className="clear-all-btn"
+                            onClick={clearAllNotifications}
+                            title="Clear all notifications"
+                          >
+                            <i className="fas fa-trash me-1"></i>
+                            Clear all
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="notification-list">
                       {notifications.length === 0 ? (
@@ -225,16 +436,39 @@ const Header = () => {
                         notifications.map(notification => (
                           <div 
                             key={notification.id} 
-                            className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                            className={`notification-item ${getNotificationColor(notification.type)} ${!notification.read ? 'unread' : ''} priority-${notification.priority || 'medium'}`}
+                            onClick={() => !notification.read && markAsRead(notification.id)}
                           >
                             <div className="notification-icon">
                               <i className={getNotificationIcon(notification.type)}></i>
                             </div>
                             <div className="notification-content">
                               <p className="notification-message">{notification.message}</p>
-                              <span className="notification-time">{notification.time}</span>
+                              <div className="notification-meta">
+                                <span className="notification-time">{notification.time}</span>
+                                {notification.priority === 'high' && (
+                                  <span className="priority-badge high">
+                                    <i className="fas fa-exclamation-circle"></i>
+                                    High
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            {!notification.read && <div className="unread-dot"></div>}
+                            {!notification.read && (
+                              <div className="notification-actions-item">
+                                <div className="unread-dot"></div>
+                                <button 
+                                  className="mark-read-single"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    markAsRead(notification.id);
+                                  }}
+                                  title="Mark as read"
+                                >
+                                  <i className="fas fa-check"></i>
+                                </button>
+                              </div>
+                            )}
                           </div>
                         ))
                       )}
