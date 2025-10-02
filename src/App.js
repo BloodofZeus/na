@@ -36,7 +36,7 @@ function AppContent() {
         )}
       </main>
       <footer className="text-center text-muted py-3 text-sm">
-        Shawarma Boss • Modern MERN Stack POS
+        Shawarma Boss • Developed by FulPlan
       </footer>
     </div>
   );
